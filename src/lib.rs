@@ -3,19 +3,20 @@
 //This gives the methods that must be implimented for any sensor that
 //impliments the SensorInterface trait.
 pub trait SensorInterface {
-    fn new() -> SensorInterface;
+    //fn new() -> Box<dyn SensorInterface>;
 
-    fn init_sensor(&self) -> Result<T, E>;
+    //fn init_sensor(&mut self) -> Result<Ok(()), SensorInterfaceError>;
 
-    fn read_sensor(&self) -> SensorData;
+    fn read_sensor(&mut self) -> &SensorData;
 
     fn get_format(&self) -> &'static str;
 
     fn get_names(&self) -> &'static str;
+
 }
 
 #[allow(dead_code)]
-struct SensorData {
+pub struct SensorData {
     data: u8,
 }
 
@@ -27,6 +28,7 @@ struct ExampleSensor{
     sensor_name: &'static str,
     data_types: &'static str,
     data_names: &'static str,
+    data: SensorData,
 }
 
 /*
@@ -34,8 +36,20 @@ struct ExampleSensor{
  * the traits for an sensor kinda.
  * 
  */
+pub const READING_NAME: &str = "Temperature";
+pub const READING_TYPE: &str = "u8";
 impl SensorInterface for ExampleSensor {
+    fn read_sensor(&mut self) -> &SensorData {
+        return &self.data; 
+    }
 
+    fn get_names(&self) -> &'static str {
+        return READING_NAME;
+    }
+
+    fn get_format(&self) -> &'static str {
+        return READING_TYPE;
+    }
 }
 
 
@@ -51,6 +65,6 @@ mod sensor_interface_tests {
 
     #[test]
     fn check_traits() {
-        let exam = ExampleSensor::new();
+        //let exam = ExampleSensor::new();
     }
 }
