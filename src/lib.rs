@@ -7,9 +7,12 @@ pub trait SensorInterface {
 
     //fn init_sensor(&mut self) -> Result<Ok(()), SensorInterfaceError>;
 
+
     fn read_sensor(&mut self) -> &SensorData;
 
     fn get_format(&self) -> &'static str;
+
+    fn get_name(&self) -> &'static str;
 
     fn get_names(&self) -> &'static str;
 
@@ -17,7 +20,7 @@ pub trait SensorInterface {
 
 #[allow(dead_code)]
 pub struct SensorData {
-    data: u8,
+    data: [u8; MAX_DATA],
 }
 
 //This is a structure just used to show how it works,
@@ -34,21 +37,27 @@ struct ExampleSensor{
 /*
  * This section shows how you should impliment
  * the traits for an sensor kinda.
- * 
+ * The values for it are static strings that are comma seperated. 
  */
-pub const READING_NAME: &str = "Temperature";
-pub const READING_TYPE: &str = "u8";
+pub const MAX_DATA: usize = 4;
+pub const SENSOR_NAME: &str = "Fakesensor";
+pub const READING_NAMES: &str = "Temperature, Humidity";
+pub const READING_TYPES: &str = "u16, u16";
 impl SensorInterface for ExampleSensor {
     fn read_sensor(&mut self) -> &SensorData {
         return &self.data; 
     }
 
+    fn get_name(&self) -> &'static str {
+        return self.sensor_name;
+    }
+
     fn get_names(&self) -> &'static str {
-        return READING_NAME;
+        return READING_NAMES;
     }
 
     fn get_format(&self) -> &'static str {
-        return READING_TYPE;
+        return READING_TYPES;
     }
 }
 
@@ -65,6 +74,20 @@ mod sensor_interface_tests {
 
     #[test]
     fn check_traits() {
-        //let exam = ExampleSensor::new();
+        let sd = SensorData {
+            data: [0x0F, 0xAA, 0x00, 0x55],
+        }; 
+
+        let exam = ExampleSensor {
+            sensor_name: SENSOR_NAME,
+            data_types: READING_TYPES,
+            data_names: READING_NAMES,
+            data: sd,
+        };
+        
+        assert_eq!(exam.get_name(), SENSOR_NAME);
+        assert_eq!(exam.get_format(), READING_TYPES);
+        assert_eq!(exam.get_names(), READING_NAMES);
+
     }
 }
