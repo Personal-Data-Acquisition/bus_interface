@@ -1,12 +1,16 @@
 #![cfg_attr(not(test), no_std)]
 
+
+pub enum controller_command {
+    
+}
+
 //This gives the methods that must be implimented for any sensor that
 //impliments the SensorInterface trait.
 pub trait SensorInterface {
     //fn new() -> Box<dyn SensorInterface>;
 
     //fn init_sensor(&mut self) -> Result<Ok(()), SensorInterfaceError>;
-
 
     fn read_sensor(&mut self) -> &SensorData;
 
