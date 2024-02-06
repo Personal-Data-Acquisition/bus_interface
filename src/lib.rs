@@ -1,5 +1,6 @@
 #![cfg_attr(not(test), no_std)]
 
+#[derive(Debug, PartialEq, Eq)]
 pub enum ControllerCommand {
     NameRequest = 0,   //Indicates the sensor's name.
     StatusRequest,     //For getting sensor modules status.
@@ -10,12 +11,25 @@ pub enum ControllerCommand {
     BulkRequest,       //For requesting all the availble types of data.
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub enum SensorStatus {
+    Ready = 0,
+    Busy,
+    SensorFailure,
+    PowerFailure,
+    BusFailure,
+    TempertureWarning,
+    VoltageWarning,
+}
+
 
 //This gives the methods that must be implimented for any sensor that
 //impliments the SensorInterface trait.
 pub trait SensorInterface {
 
     fn get_name(&self) -> &'static str;
+    
+    fn get_status(&self) -> SensorStatus;
 
     fn soft_reset(&mut self) -> bool;
 
@@ -24,7 +38,6 @@ pub trait SensorInterface {
     fn get_data_names(&self) -> &'static str;
 
     fn read_sensor(&mut self) -> &SensorData;
-
 
 }
 
@@ -54,6 +67,11 @@ pub const SENSOR_NAME: &str = "Fakesensor";
 pub const READING_NAMES: &str = "Temperature, Humidity";
 pub const READING_TYPES: &str = "u16, u16";
 impl SensorInterface for ExampleSensor {
+
+    fn get_status(&self) -> SensorStatus {
+        return SensorStatus::Ready;
+    }
+
     fn read_sensor(&mut self) -> &SensorData {
         return &self.data; 
     }
@@ -104,5 +122,6 @@ mod sensor_interface_tests {
         assert_eq!(exam.get_format(), READING_TYPES);
         assert_eq!(exam.get_data_names(), READING_NAMES);
         assert_eq!(exam.soft_reset(), true);
+        assert_eq!(exam.get_status(), SensorStatus::Ready);
     }
 }
