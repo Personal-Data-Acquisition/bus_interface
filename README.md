@@ -1,4 +1,4 @@
-# sensor_shim_template
+# Bus_interface
 
 A template for creating or implimenting sensor shim layers.
 
