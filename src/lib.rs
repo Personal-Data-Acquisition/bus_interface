@@ -15,15 +15,17 @@ pub enum ControllerCommand {
 //impliments the SensorInterface trait.
 pub trait SensorInterface {
 
-    fn read_sensor(&mut self) -> &SensorData;
+    fn get_name(&self) -> &'static str;
+
+    fn soft_reset(&mut self) -> bool;
 
     fn get_format(&self) -> &'static str;
 
-    fn get_name(&self) -> &'static str;
-
     fn get_data_names(&self) -> &'static str;
 
-    fn soft_reset(&mut self) -> bool;
+    fn read_sensor(&mut self) -> &SensorData;
+
+
 }
 
 #[allow(dead_code)]
