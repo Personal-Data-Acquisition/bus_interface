@@ -14,9 +14,6 @@ pub enum ControllerCommand {
 //This gives the methods that must be implimented for any sensor that
 //impliments the SensorInterface trait.
 pub trait SensorInterface {
-    //fn new() -> Box<dyn SensorInterface>;
-
-    //fn init_sensor(&mut self) -> Result<Ok(()), SensorInterfaceError>;
 
     fn read_sensor(&mut self) -> &SensorData;
 
@@ -24,8 +21,9 @@ pub trait SensorInterface {
 
     fn get_name(&self) -> &'static str;
 
-    fn get_names(&self) -> &'static str;
+    fn get_data_names(&self) -> &'static str;
 
+    fn soft_reset(&mut self) -> bool;
 }
 
 #[allow(dead_code)]
@@ -62,13 +60,18 @@ impl SensorInterface for ExampleSensor {
         return self.sensor_name;
     }
 
-    fn get_names(&self) -> &'static str {
+    fn get_data_names(&self) -> &'static str {
         return READING_NAMES;
     }
 
     fn get_format(&self) -> &'static str {
         return READING_TYPES;
     }
+
+    fn soft_reset(&mut self) -> bool {
+        return true;
+    }
+
 }
 
 
@@ -88,7 +91,7 @@ mod sensor_interface_tests {
             data: [0x0F, 0xAA, 0x00, 0x55],
         }; 
 
-        let exam = ExampleSensor {
+        let mut exam = ExampleSensor {
             sensor_name: SENSOR_NAME,
             data_types: READING_TYPES,
             data_names: READING_NAMES,
@@ -97,7 +100,7 @@ mod sensor_interface_tests {
         
         assert_eq!(exam.get_name(), SENSOR_NAME);
         assert_eq!(exam.get_format(), READING_TYPES);
-        assert_eq!(exam.get_names(), READING_NAMES);
-
+        assert_eq!(exam.get_data_names(), READING_NAMES);
+        assert_eq!(exam.soft_reset(), true);
     }
 }
