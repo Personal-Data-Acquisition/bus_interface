@@ -1,13 +1,13 @@
 #![cfg_attr(not(test), no_std)]
 
-pub enum controller_command {
-    name_request = 0,   //Indicates the sensor's name.
-    status_request,     //For getting sensor modules status.
-    reset_request,      //For asking the module to do a soft-reset.
-    formating_request,  //Gives the format of sensor's readings.
-    dnames_request,     //Gives the data's names, (volts/temp/humidity etc)
-    data_request,       //For requests of the sensor's data for individual type.
-    bulk_request,       //For requesting all the availble types of data.
+pub enum ControllerCommand {
+    NameRequest = 0,   //Indicates the sensor's name.
+    StatusRequest,     //For getting sensor modules status.
+    ResetRequest,      //For asking the module to do a soft-reset.
+    FormatingRequest,  //Gives the format of sensor's readings.
+    DnamesRequest,     //Gives the data's names, (volts/temp/humidity etc)
+    DataRequest,       //For requests of the sensor's data for individual type.
+    BulkRequest,       //For requesting all the availble types of data.
 }
 
 
