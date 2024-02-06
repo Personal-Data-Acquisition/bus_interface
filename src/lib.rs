@@ -11,6 +11,8 @@ pub enum ControllerCommand {
     BulkRequest,       //For requesting all the availble types of data.
 }
 
+
+// Used to indicate the various kinds of sensor module statuses/states.
 #[derive(Debug, PartialEq, Eq)]
 pub enum SensorStatus {
     Ready = 0,
