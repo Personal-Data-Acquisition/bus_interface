@@ -68,28 +68,28 @@ pub const READING_NAMES: &str = "Temperature, Humidity";
 pub const READING_TYPES: &str = "u16, u16";
 impl SensorInterface for ExampleSensor {
 
-    fn get_status(&self) -> SensorStatus {
-        return SensorStatus::Ready;
-    }
-
-    fn read_sensor(&mut self) -> &SensorData {
-        return &self.data; 
-    }
-
     fn get_name(&self) -> &'static str {
         return self.sensor_name;
     }
 
-    fn get_data_names(&self) -> &'static str {
-        return READING_NAMES;
+    fn get_status(&self) -> SensorStatus {
+        return SensorStatus::Ready;
+    }
+
+    fn soft_reset(&mut self) -> bool {
+        return true;
     }
 
     fn get_format(&self) -> &'static str {
         return READING_TYPES;
     }
 
-    fn soft_reset(&mut self) -> bool {
-        return true;
+    fn get_data_names(&self) -> &'static str {
+        return READING_NAMES;
+    }
+
+    fn read_sensor(&mut self) -> &SensorData {
+        return &self.data; 
     }
 
 }
