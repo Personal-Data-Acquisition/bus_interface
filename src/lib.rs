@@ -33,7 +33,7 @@ pub trait SensorInterface {
     
     fn get_status(&self) -> SensorStatus;
 
-    fn soft_reset(&mut self) -> bool;
+    fn soft_reset(&mut self) -> SensorStatus;
 
     fn get_format(&self) -> &'static str;
 
@@ -78,8 +78,8 @@ impl SensorInterface for ExampleSensor {
         return SensorStatus::Ready;
     }
 
-    fn soft_reset(&mut self) -> bool {
-        return true;
+    fn soft_reset(&mut self) -> SensorStatus {
+        return SensorStatus::Busy;
     }
 
     fn get_format(&self) -> &'static str {
@@ -123,7 +123,7 @@ mod sensor_interface_tests {
         assert_eq!(exam.get_name(), SENSOR_NAME);
         assert_eq!(exam.get_format(), READING_TYPES);
         assert_eq!(exam.get_data_names(), READING_NAMES);
-        assert_eq!(exam.soft_reset(), true);
+        assert_eq!(exam.soft_reset(), SensorStatus::Busy);
         assert_eq!(exam.get_status(), SensorStatus::Ready);
     }
 }
