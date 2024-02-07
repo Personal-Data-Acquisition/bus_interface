@@ -1,6 +1,7 @@
 #![cfg_attr(not(test), no_std)]
 
 #[derive(Debug, PartialEq, Eq)]
+#[repr(u8)]
 pub enum ControllerCommand {
     NameRequest = 0,   //Indicates the sensor's name.
     StatusRequest,     //For getting sensor modules status.
@@ -9,6 +10,23 @@ pub enum ControllerCommand {
     DnamesRequest,     //Gives the data's names, (volts/temp/humidity etc)
     DataRequest,       //For requests of the sensor's data for individual type.
     BulkRequest,       //For requesting all the availble types of data.
+    BadCommand,
+}
+
+
+impl From<u8> for ControllerCommand {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => ControllerCommand::NameRequest,
+            1 => ControllerCommand::StatusRequest,
+            2 => ControllerCommand::ResetRequest,
+            3 => ControllerCommand::FormatingRequest,
+            4 => ControllerCommand::DnamesRequest,
+            5 => ControllerCommand::DataRequest,
+            6 => ControllerCommand::BulkRequest,
+            _ => ControllerCommand::BadCommand,
+        }
+    }
 }
 
 
