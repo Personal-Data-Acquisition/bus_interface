@@ -10,9 +10,8 @@ pub enum ControllerCommand {
     DnamesRequest,     //Gives the data's names, (volts/temp/humidity etc)
     DataRequest,       //For requests of the sensor's data for individual type.
     BulkRequest,       //For requesting all the availble types of data.
-    BadCommand,
+    BadCommand,        //To represent invalid or bad commands.
 }
-
 
 impl From<u8> for ControllerCommand {
     fn from(value: u8) -> Self {
@@ -60,6 +59,11 @@ pub trait SensorInterface {
     fn read_sensor(&mut self) -> &SensorData;
 
 }
+
+
+//pub fn command_handler(bus: &Bus, cmd: &ControllerCommand, sens: &SensorInterface) {
+
+//}
 
 #[allow(dead_code)]
 pub struct SensorData {
@@ -143,5 +147,11 @@ mod sensor_interface_tests {
         assert_eq!(exam.get_data_names(), READING_NAMES);
         assert_eq!(exam.soft_reset(), SensorStatus::Busy);
         assert_eq!(exam.get_status(), SensorStatus::Ready);
+    }
+   
+    #[test]
+    fn into_and_from() {
+        let val: u8  = 0x00;
+        assert_eq!(ControllerCommand::from(val), ControllerCommand::NameRequest);
     }
 }
