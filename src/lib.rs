@@ -105,6 +105,7 @@ pub fn command_handler(bus: &mut dyn Bus, cmd: &ControllerCommand, sens: &mut dy
     }
 }
 
+
 #[allow(dead_code)]
 pub struct SensorData {
     data: [u8; MAX_DATA],
@@ -174,13 +175,6 @@ impl Bus for ExampleBus {
         BusStatus::Good
     }
 }
-
-
-//Only used for testing
-//static mut FAKE_BUS_DATA: u8 = 0x00;
-
-
-
 
 #[cfg(test)]
 mod sensor_interface_tests {
