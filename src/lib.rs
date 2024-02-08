@@ -31,6 +31,7 @@ impl From<u8> for ControllerCommand {
 
 // Used to indicate the various kinds of sensor module statuses/states.
 #[derive(Debug, PartialEq, Eq)]
+#[repr(u8)]
 pub enum SensorStatus {
     Ready = 0,
     Busy,
