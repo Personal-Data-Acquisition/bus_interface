@@ -235,7 +235,8 @@ mod sensor_interface_tests {
         command_handler(&mut exam_bus, &cmd, &mut exam);
 
         assert_eq!(exam_bus.w_buffer[0], cmd as u8);
-        
+       
+        //checks to ensure the stuff being sent is all valid
         for i in 0..SENSOR_NAME.as_bytes().len()-1 {
             assert_eq!(exam_bus.w_buffer[i + 1], SENSOR_NAME.as_bytes()[i]);
         }
