@@ -77,7 +77,32 @@ pub trait Bus {
 }
 
 pub fn command_handler(bus: &mut dyn Bus, cmd: &ControllerCommand, sens: &mut dyn SensorInterface) {
-    
+    match cmd {
+        ControllerCommand::NameRequest => {
+            bus.send();
+        }
+        ControllerCommand::StatusRequest => {
+
+        }
+        ControllerCommand::ResetRequest => {
+
+        }
+        ControllerCommand::FormatingRequest => {
+
+        }
+        ControllerCommand::DnamesRequest => {
+
+        }
+        ControllerCommand::DataRequest => {
+
+        }
+        ControllerCommand::BulkRequest => {
+
+        }
+        ControllerCommand::BadCommand => {
+
+        }
+    }
 }
 
 #[allow(dead_code)]
