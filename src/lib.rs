@@ -62,9 +62,23 @@ pub trait SensorInterface {
 }
 
 
-//pub fn command_handler(bus: &Bus, cmd: &ControllerCommand, sens: &SensorInterface) {
+#[derive(Debug, PartialEq, Eq)]
+#[repr(u8)]
+pub enum BusStatus {
+    Good = 0,
+    Busy,
+    Error,
+}
 
-//}
+pub trait Bus {
+    fn send(&mut self) -> BusStatus;
+
+    fn receive(&mut self) -> BusStatus;
+}
+
+pub fn command_handler(bus: &mut dyn Bus, cmd: &ControllerCommand, sens: &mut dyn SensorInterface) {
+    
+}
 
 #[allow(dead_code)]
 pub struct SensorData {
@@ -81,6 +95,7 @@ struct ExampleSensor{
     data_names: &'static str,
     data: SensorData,
 }
+
 
 /*
  * This section shows how you should impliment
@@ -119,6 +134,27 @@ impl SensorInterface for ExampleSensor {
 
 }
 
+#[allow(dead_code)]
+pub struct ExampleBus {
+    r_buffer: [u8; 8],
+    w_buffer: [u8; 8],
+}
+
+impl Bus for ExampleBus {
+    fn send(&mut self) -> BusStatus {
+        BusStatus::Good
+    }
+
+    fn receive(&mut self) -> BusStatus {
+        BusStatus::Good
+    }
+}
+
+
+//Only used for testing
+//static mut FAKE_BUS_DATA: u8 = 0x00;
+
+
 
 
 #[cfg(test)]
@@ -154,5 +190,35 @@ mod sensor_interface_tests {
     fn into_and_from() {
         let val: u8  = 0x00;
         assert_eq!(ControllerCommand::from(val), ControllerCommand::NameRequest);
+    }
+
+    #[test]
+    fn read_name_command() {
+        
+        let sd = SensorData {
+            data: [0x0F, 0xAA, 0x00, 0x55],
+        }; 
+
+        let mut exam = ExampleSensor {
+            sensor_name: SENSOR_NAME,
+            data_types: READING_TYPES,
+            data_names: READING_NAMES,
+            data: sd,
+        };
+
+        let mut exam_bus = ExampleBus {
+            r_buffer: [0, 0, 0, 0, 0, 0, 0, 0],
+            w_buffer: [0, 0, 0, 0, 0, 0, 0, 0],
+        };
+       
+
+        let cmd = ControllerCommand::NameRequest;
+        command_handler(&mut exam_bus, &cmd, &mut exam);
+
+        assert_eq!(exam_bus.w_buffer[0], cmd as u8);
+        
+        for i in 0..SENSOR_NAME.as_bytes().len()-1 {
+            assert_eq!(exam_bus.w_buffer[i + 1], SENSOR_NAME.as_bytes()[i]);
+        }
     }
 }
