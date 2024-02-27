@@ -1,5 +1,18 @@
 #![cfg_attr(not(test), no_std)]
 
+/* Only include the fake/mocked can device when testing. */
+#[cfg(test)]
+include!("can_mock.rs");
+
+
+//#[cfg(not(feature = "can_mock"))]
+
+//#[cfg(feature = "can_mock")]
+//use can_mock::CanBus;
+
+
+
+
 #[derive(Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum ControllerCommand {
