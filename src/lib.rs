@@ -12,6 +12,7 @@ const READ_BUFFER_BYTES: usize = 8;
 pub enum BusError {
     Unknown,
     BadParameter,
+    BusError,
 }
 
 //A simplified bus setup. Will define wrappers for a variety of busses 
