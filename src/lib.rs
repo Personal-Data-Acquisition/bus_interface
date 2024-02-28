@@ -1,10 +1,30 @@
 #![cfg_attr(not(test), no_std)]
 
+/* Only include the fake/mocked when testing. */
+#[cfg(test)]
+include!("fake_bus.rs");
+
+const SEND_BUFFER_BYTES: usize = 8;
+const READ_BUFFER_BYTES: usize = 8;
+
+#[derive(Debug)]
+pub enum BusError {
+    Unknown,
+}
+
+//A simplified bus setup. Will define wrappers for a variety of busses 
+//elsewhere.
+pub trait Bus{
+    fn send_message(&mut self, id: u32, data: &[u8; SEND_BUFFER_BYTES]) -> Result<(), BusError>;
+    fn receive_message(&mut self) -> Result<(u32, [u8; READ_BUFFER_BYTES]), BusError>;
+}
+
+
 #[derive(Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum ControllerCommand {
     NameRequest = 0,   //Indicates the sensor's name.
-    StatusRequest,     //For getting sensor modules status.
+    StatusRequest,     //For getting sensor modules status
     ResetRequest,      //For asking the module to do a soft-reset.
     FormatingRequest,  //Gives the format of sensor's readings.
     DnamesRequest,     //Gives the data's names, (volts/temp/humidity etc)
@@ -70,16 +90,10 @@ pub enum BusStatus {
     Error,
 }
 
-pub trait Bus {
-    fn send(&mut self) -> BusStatus;
-
-    fn receive(&mut self) -> BusStatus;
-}
-
-pub fn command_handler(bus: &mut dyn Bus, cmd: &ControllerCommand, sens: &mut dyn SensorInterface) {
+pub fn command_handler(bus: &mut dyn Bus, cmd: &ControllerCommand, _sens: &mut dyn SensorInterface) {
     match cmd {
         ControllerCommand::NameRequest => {
-            bus.send();
+            //bus.send_message()
         }
         ControllerCommand::StatusRequest => {
 
@@ -160,21 +174,6 @@ impl SensorInterface for ExampleSensor {
 
 }
 
-#[allow(dead_code)]
-pub struct ExampleBus {
-    r_buffer: [u8; 8],
-    w_buffer: [u8; 8],
-}
-
-impl Bus for ExampleBus {
-    fn send(&mut self) -> BusStatus {
-        BusStatus::Good
-    }
-
-    fn receive(&mut self) -> BusStatus {
-        BusStatus::Good
-    }
-}
 
 #[cfg(test)]
 mod sensor_interface_tests {
@@ -225,20 +224,5 @@ mod sensor_interface_tests {
             data: sd,
         };
 
-        let mut exam_bus = ExampleBus {
-            r_buffer: [0, 0, 0, 0, 0, 0, 0, 0],
-            w_buffer: [0, 0, 0, 0, 0, 0, 0, 0],
-        };
-       
-
-        let cmd = ControllerCommand::NameRequest;
-        command_handler(&mut exam_bus, &cmd, &mut exam);
-
-        assert_eq!(exam_bus.w_buffer[0], cmd as u8);
-       
-        //checks to ensure the stuff being sent is all valid
-        for i in 0..SENSOR_NAME.as_bytes().len()-1 {
-            assert_eq!(exam_bus.w_buffer[i + 1], SENSOR_NAME.as_bytes()[i]);
-        }
     }
 }
