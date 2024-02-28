@@ -16,6 +16,16 @@ pub struct FakeBus {
     msg_buffer: [u8; BUFFER_SIZE],
 }
 
+impl FakeBus {
+    pub fn new() -> FakeBus {
+        let fb = FakeBus{
+            id: 0,
+            msg_buffer: [0; BUFFER_SIZE],
+        };
+        return fb;
+    }
+}
+
 impl Bus for FakeBus {
     
     fn send_message(&mut self, id: u32, data: &[u8; SEND_BUFFER_BYTES]) -> Result<(), BusError> {
@@ -32,10 +42,10 @@ impl Bus for FakeBus {
         else {
             id_buf = id.to_be_bytes();
         }
-        self.msg_buffer.copy_from_slice(&id_buf);
+        self.msg_buffer[0..4].copy_from_slice(&id_buf);
         
         //Now copy the data into the msg_buffer as well.
-        self.msg_buffer[4..].copy_from_slice(data);
+        self.msg_buffer[4..(SEND_BUFFER_BYTES + 4)].copy_from_slice(data);
 
         Ok(())
     }
@@ -59,8 +69,37 @@ impl Bus for FakeBus {
         }
 
         //copy the message into the data array.
-        data.copy_from_slice(&self.msg_buffer);
+        data.copy_from_slice(&self.msg_buffer[4..(READ_BUFFER_BYTES + 4)]);
 
         Ok((id, data))
+    }
+}
+
+
+#[cfg(test)]
+mod fake_bus_tests {
+    #[allow(unused_imports)]
+    use super::*;
+
+    #[test]
+    fn check_self() {
+        assert!(true);
+    }
+
+    #[test]
+    fn send_receive() {
+        let mut fb = FakeBus::new();
+        let msg_data: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
+        assert!(fb.send_message(fb.id, &msg_data).is_ok());
+        
+        let result = fb.receive_message();
+        assert!(result.is_ok());
+        
+        let rx_id: u32;
+        let data: [u8; 8]; 
+        (rx_id, data) = result.unwrap();
+
+        assert!(rx_id == 0);
+        assert!(data == msg_data);
     }
 }
