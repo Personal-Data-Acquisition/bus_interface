@@ -28,9 +28,9 @@ impl FakeBus {
 
 impl Bus for FakeBus {
     
-    fn send_message(&mut self, id: u32, data: &[u8; SEND_BUFFER_BYTES]) -> Result<(), BusError> {
-        if id > MAX_ID || id < MIN_ID {
-            return Err(BusError::Unknown);
+    fn send_message(&mut self, id: u32, data: &[u8; SEND_BUFFER_BYTES], num_bytes: usize) -> Result<(), BusError> {
+        if id > MAX_ID || id < MIN_ID || num_bytes > 8 || num_bytes < 1 {
+            return Err(BusError::BadParameter);
         }
         
         //copy the id + data into the message_buffer, we do some bit shifting.
@@ -90,7 +90,29 @@ mod fake_bus_tests {
     fn send_receive() {
         let mut fb = FakeBus::new();
         let msg_data: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
-        assert!(fb.send_message(fb.id, &msg_data).is_ok());
+        assert!(fb.send_message(fb.id, &msg_data, 8).is_ok());
+        
+        let result = fb.receive_message();
+        assert!(result.is_ok());
+        
+        let rx_id: u32;
+        let data: [u8; 8]; 
+        (rx_id, data) = result.unwrap();
+
+        assert!(rx_id == 0);
+        assert!(data == msg_data);
+    }
+
+    #[test]
+    fn send_receivce_single_byte() {
+        let mut fb = FakeBus::new();
+        let mut msg_data: [u8; 8] = [0; 8];
+        
+        //set the actual data into it
+        msg_data[0] = 1;
+
+        //indicate we only want to read 1 byte
+        assert!(fb.send_message(fb.id, &msg_data, 1).is_ok());
         
         let result = fb.receive_message();
         assert!(result.is_ok());

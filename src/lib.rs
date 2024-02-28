@@ -11,12 +11,13 @@ const READ_BUFFER_BYTES: usize = 8;
 #[derive(Debug)]
 pub enum BusError {
     Unknown,
+    BadParameter,
 }
 
 //A simplified bus setup. Will define wrappers for a variety of busses 
 //elsewhere.
 pub trait Bus{
-    fn send_message(&mut self, id: u32, data: &[u8; SEND_BUFFER_BYTES]) -> Result<(), BusError>;
+    fn send_message(&mut self, id: u32, data: &[u8; SEND_BUFFER_BYTES], data_len: usize) -> Result<(), BusError>;
     fn receive_message(&mut self) -> Result<(u32, [u8; READ_BUFFER_BYTES]), BusError>;
 }
 
@@ -96,10 +97,10 @@ pub enum BusStatus {
 pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand, _sens: &mut dyn SensorInterface) {
     match cmd {
         ControllerCommand::NameRequest => {
-            let mut data: [u8; SEND_BUFFER_BYTES] = [0; SEND_BUFFER_BYTES];
-            data[0] = ControllerCommand::NameRequest as u8;
-            let result = bus.send_message(0, &data);
-            
+            //let mut data: [u8; SEND_BUFFER_BYTES] = [0; SEND_BUFFER_BYTES];
+            //data[0] = ControllerCommand::NameRequest as u8;
+            //let result = bus.send_message(0, &data, 8);
+
             //impliment a timeout
 
         }
