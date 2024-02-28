@@ -7,6 +7,7 @@ include!("fake_bus.rs");
 const SEND_BUFFER_BYTES: usize = 8;
 const READ_BUFFER_BYTES: usize = 8;
 
+// The Errors that we allow as result's
 #[derive(Debug)]
 pub enum BusError {
     Unknown,
@@ -90,10 +91,17 @@ pub enum BusStatus {
     Error,
 }
 
-pub fn command_handler(bus: &mut dyn Bus, cmd: &ControllerCommand, _sens: &mut dyn SensorInterface) {
+
+// Used by the BUS Master/Controller
+pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand, _sens: &mut dyn SensorInterface) {
     match cmd {
         ControllerCommand::NameRequest => {
-            //bus.send_message()
+            let mut data: [u8; SEND_BUFFER_BYTES] = [0; SEND_BUFFER_BYTES];
+            data[0] = ControllerCommand::NameRequest as u8;
+            let result = bus.send_message(0, &data);
+            
+            //impliment a timeout
+
         }
         ControllerCommand::StatusRequest => {
 
@@ -217,7 +225,7 @@ mod sensor_interface_tests {
             data: [0x0F, 0xAA, 0x00, 0x55],
         }; 
 
-        let mut exam = ExampleSensor {
+        let exam = ExampleSensor {
             sensor_name: SENSOR_NAME,
             data_types: READING_TYPES,
             data_names: READING_NAMES,
