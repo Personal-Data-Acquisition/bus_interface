@@ -110,6 +110,7 @@ mod fake_bus_tests {
         
         //set the actual data into it
         msg_data[0] = 1;
+        msg_data[1] = 6;
 
         //indicate we only want to read 1 byte
         assert!(fb.send_message(fb.id, &msg_data, 1).is_ok());
