@@ -118,7 +118,7 @@ mod fake_bus_tests {
         let data: [u8; 8]; 
         (rx_id, data) = result.unwrap();
 
-        assert!(rx_id == 0);
+        assert!(rx_id == 1);
         assert!(data == msg_data);
     }
 
@@ -141,7 +141,7 @@ mod fake_bus_tests {
         let data: [u8; 8]; 
         (rx_id, data) = result.unwrap();
 
-        assert!(rx_id == 0);
+        assert!(rx_id == 1);
         assert!(data == msg_data);
     }
 
