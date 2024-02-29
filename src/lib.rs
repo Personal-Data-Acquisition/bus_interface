@@ -95,7 +95,7 @@ pub enum BusStatus {
 
 
 // Used by the BUS Master/Controller
-pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand, _sens: &mut dyn SensorInterface) -> Result<(), BusStatus>{
+pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<(), BusStatus>{
     match cmd {
         ControllerCommand::NameRequest => {
             let mut data: [u8; SEND_BUFFER_BYTES] = [0; SEND_BUFFER_BYTES];
@@ -131,6 +131,10 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand, _sens: &mut 
     }
 }
 
+
+pub fn handle_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand, _sens: &mut dyn SensorInterface) -> Result<(), BusStatus>{
+    Ok(())
+}
 
 #[allow(dead_code)]
 pub struct SensorData {
@@ -240,8 +244,9 @@ mod sensor_interface_tests {
         let mut fake_bus = FakeBus::new();
 
         //make the request using the fake bus.
-        let cmd_result = send_bus_command(&mut fake_bus, &ControllerCommand::NameRequest, &mut exam);
+        let cmd_result = send_bus_command(&mut fake_bus, &ControllerCommand::NameRequest);
         assert!(cmd_result.is_ok());
+
 
         //now check the send data.
 
