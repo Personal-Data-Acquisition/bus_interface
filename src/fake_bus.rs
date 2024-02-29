@@ -9,6 +9,7 @@ const BUFFER_SIZE: usize = 32;
 const MIN_ID: u32 =  0;
 const MAX_ID: u32 = 128;
 const LITTLE_ENDIAN: bool = true;
+const BYTES_IN_U32: usize = 4;
 
 #[allow(dead_code)]
 pub struct FakeBus {
@@ -53,7 +54,7 @@ impl Bus for FakeBus {
         }
         
         //copy the id + data into the message_buffer, we do some bit shifting.
-        let id_buf: [u8; 4];
+        let id_buf: [u8; BYTES_IN_U32];
 
         if LITTLE_ENDIAN {
             id_buf = id.to_le_bytes();  
@@ -61,10 +62,10 @@ impl Bus for FakeBus {
         else {
             id_buf = id.to_be_bytes();
         }
-        self.msg_buffer[0..4].copy_from_slice(&id_buf);
+        self.msg_buffer[0..BYTES_IN_U32].copy_from_slice(&id_buf);
         
         //Now copy the data into the msg_buffer as well.
-        self.msg_buffer[4..(SEND_BUFFER_BYTES + 4)].copy_from_slice(data);
+        self.msg_buffer[BYTES_IN_U32..(num_bytes + BYTES_IN_U32)].copy_from_slice(&data[0..num_bytes]);
 
         Ok(())
     }
@@ -88,7 +89,12 @@ impl Bus for FakeBus {
         }
 
         //copy the message into the data array.
-        data.copy_from_slice(&self.msg_buffer[4..(READ_BUFFER_BYTES + 4)]);
+        data.copy_from_slice(
+            &self
+            .msg_buffer[
+                BYTES_IN_U32..(READ_BUFFER_BYTES + BYTES_IN_U32)
+                ]
+            );
 
         Ok((id, data))
     }
@@ -142,6 +148,8 @@ mod fake_bus_tests {
         (rx_id, data) = result.unwrap();
 
         assert!(rx_id == 1);
+        msg_data = [0; 8];
+        msg_data[0]= 1;
         assert!(data == msg_data);
     }
 
