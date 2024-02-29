@@ -15,6 +15,7 @@ const BYTES_IN_U32: usize = 4;
 pub struct FakeBus {
     tx_id: u32,
     rx_id: u32,
+    num_bytes: usize,
     msg_buffer: [u8; BUFFER_SIZE],
 }
 
@@ -23,6 +24,7 @@ impl FakeBus {
         let fb = FakeBus{
             tx_id: 0,
             rx_id: 1,
+            num_bytes: 0,
             msg_buffer: [0; BUFFER_SIZE],
         };
         return fb;
@@ -53,6 +55,9 @@ impl Bus for FakeBus {
             return Err(BusError::BadParameter);
         }
         
+        //set the number of bytes used.
+        self.num_bytes = num_bytes;
+
         //copy the id + data into the message_buffer, we do some bit shifting.
         let id_buf: [u8; BYTES_IN_U32];
 
@@ -106,6 +111,17 @@ mod fake_bus_tests {
     #[allow(unused_imports)]
     use super::*;
 
+    //let mut fb = FakeBus::new();
+    //let mut msg_data: [u8; 8] = [0; 8];
+
+    #[macro_export]
+    macro_rules! setup {
+        ($($x:expr), *) => {
+            let mut fb = FakeBus::new();
+            let msg_data: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
+        };
+    }
+
     #[test]
     fn check_self() {
         assert!(true);
@@ -139,6 +155,7 @@ mod fake_bus_tests {
 
         //indicate we only want to read 1 byte
         assert!(fb.send_message(fb.rx_id, &msg_data, 1).is_ok());
+        assert!(fb.num_bytes == 1);
         
         let result = fb.receive_message();
         assert!(result.is_ok());
@@ -210,5 +227,10 @@ mod fake_bus_tests {
         //indicate we only want to read 1 byte
         assert!(fb.send_message(fb.rx_id, &msg_data, 1).is_ok());
         assert!(fb.spy_id() == fb.rx_id);
+    }
+
+    #[test]
+    fn num_bytes() {
+
     }
 }
