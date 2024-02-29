@@ -28,7 +28,7 @@ impl FakeBus {
     }
 
     //Returns the data bytes from the message.
-    pub fn spy_data(self) -> [u8; 8] {
+    pub fn spy_data(&self) -> [u8; 8] {
         let mut spy_data: [u8; 8] = [0; 8];
         spy_data.copy_from_slice(&self.msg_buffer[4..(8 + 4)]);
         return spy_data;
