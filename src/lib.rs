@@ -234,7 +234,7 @@ mod sensor_interface_tests {
         assert_eq!(ControllerCommand::from(val), ControllerCommand::NameRequest);
     }
 
-    //#[test]
+    #[test]
     fn read_name_command() {
         
         let sd = SensorData {
