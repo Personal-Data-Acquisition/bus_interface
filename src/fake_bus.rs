@@ -24,6 +24,23 @@ impl FakeBus {
         };
         return fb;
     }
+
+    //Returns the data bytes from the message.
+    pub fn spy_data(self) -> [u8; 8] {
+        let mut spy_data: [u8; 8] = [0; 8];
+        spy_data.copy_from_slice(&self.msg_buffer[4..(8 + 4)]);
+        return spy_data;
+    }
+
+    //Returns the id of the message in the buffer.
+    pub fn spy_id(&self) -> u32 {
+        let id: u32;
+        id = ((self.msg_buffer[0] as u32) | 
+              ((self.msg_buffer[1] as u32)>>8) | 
+              ((self.msg_buffer[2] as u32)>>16) | 
+              ((self.msg_buffer[3] as u32)>>24)) as u32;
+        return id;
+    }
 }
 
 impl Bus for FakeBus {
@@ -124,5 +141,64 @@ mod fake_bus_tests {
 
         assert!(rx_id == 0);
         assert!(data == msg_data);
+    }
+
+    #[test]
+    fn send_bad_msg_len() {
+        let mut fb = FakeBus::new();
+        let mut msg_data: [u8; 8] = [0; 8];
+        
+        //set the actual data into it
+        msg_data[0] = 1;
+        msg_data[1] = 6;
+
+        //indicate we only want to read 1 byte
+        assert!(fb.send_message(fb.id, &msg_data, 9).is_ok() == false);
+    }
+
+    #[test]
+    fn send_bad_msg_id() {
+        const INVALID_ID: u32 = 129;
+        let mut fb = FakeBus::new();
+        let mut msg_data: [u8; 8] = [0; 8];
+        
+        //set the actual data into it
+        msg_data[0] = 1;
+        msg_data[1] = 6;
+
+        //indicate we only want to read 1 byte
+        assert!(fb.send_message(INVALID_ID, &msg_data, 2).is_ok() == false);
+    }
+
+    #[test]
+    fn spy_data() {
+        let mut fb = FakeBus::new();
+        let mut msg_data: [u8; 8] = [0; 8];
+
+        //set the actual data into it
+        msg_data[0] = 1;
+
+        //indicate we only want to read 1 byte
+        assert!(fb.send_message(fb.id, &msg_data, 1).is_ok());
+       
+        //check that we can spy on the sent data.
+        let spy_data = fb.spy_data();
+        println!("Spy_data: {:?}", spy_data);
+        
+        assert!(spy_data == msg_data);
+
+    }
+
+    #[test]
+    fn spy_id() {
+        let mut fb = FakeBus::new();
+        let mut msg_data: [u8; 8] = [0; 8];
+
+        //set the actual data into it
+        msg_data[0] = 1;
+
+        //indicate we only want to read 1 byte
+        assert!(fb.send_message(fb.id, &msg_data, 1).is_ok());
+        assert!(fb.spy_id() == fb.id);
     }
 }
