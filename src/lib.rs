@@ -95,36 +95,38 @@ pub enum BusStatus {
 
 
 // Used by the BUS Master/Controller
-pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand, _sens: &mut dyn SensorInterface) {
+pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand, _sens: &mut dyn SensorInterface) -> Result<(), BusStatus>{
     match cmd {
         ControllerCommand::NameRequest => {
-            //let mut data: [u8; SEND_BUFFER_BYTES] = [0; SEND_BUFFER_BYTES];
-            //data[0] = ControllerCommand::NameRequest as u8;
-            //let result = bus.send_message(0, &data, 8);
-
+            let mut data: [u8; SEND_BUFFER_BYTES] = [0; SEND_BUFFER_BYTES];
+            data[0] = ControllerCommand::NameRequest as u8;
+            let result = bus.send_message(0, &data, 8);
+            if result.is_ok() {
+                return Ok(())
+            }
             //impliment a timeout
-
+            return Err(BusStatus::Error)
         }
         ControllerCommand::StatusRequest => {
-
+            Ok(())
         }
         ControllerCommand::ResetRequest => {
-
+            Ok(())
         }
         ControllerCommand::FormatingRequest => {
-
+            Ok(())
         }
         ControllerCommand::DnamesRequest => {
-
+            Ok(())
         }
         ControllerCommand::DataRequest => {
-
+            Ok(())
         }
         ControllerCommand::BulkRequest => {
-
+            Ok(())
         }
         ControllerCommand::BadCommand => {
-
+            Ok(())
         }
     }
 }
@@ -227,12 +229,21 @@ mod sensor_interface_tests {
             data: [0x0F, 0xAA, 0x00, 0x55],
         }; 
 
-        let exam = ExampleSensor {
+        let mut exam = ExampleSensor {
             sensor_name: SENSOR_NAME,
             data_types: READING_TYPES,
             data_names: READING_NAMES,
             data: sd,
         };
+
+        //create a fake bus instance
+        let mut fake_bus = FakeBus::new();
+
+        //make the request using the fake bus.
+        let cmd_result = send_bus_command(&mut fake_bus, &ControllerCommand::NameRequest, &mut exam);
+        assert!(cmd_result.is_ok());
+
+        //now check the send data.
 
     }
 }
