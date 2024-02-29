@@ -12,14 +12,16 @@ const LITTLE_ENDIAN: bool = true;
 
 #[allow(dead_code)]
 pub struct FakeBus {
-    id: u32,
+    tx_id: u32,
+    rx_id: u32,
     msg_buffer: [u8; BUFFER_SIZE],
 }
 
 impl FakeBus {
     pub fn new() -> FakeBus {
         let fb = FakeBus{
-            id: 0,
+            tx_id: 0,
+            rx_id: 1,
             msg_buffer: [0; BUFFER_SIZE],
         };
         return fb;
@@ -107,7 +109,7 @@ mod fake_bus_tests {
     fn send_receive() {
         let mut fb = FakeBus::new();
         let msg_data: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
-        assert!(fb.send_message(fb.id, &msg_data, 8).is_ok());
+        assert!(fb.send_message(fb.rx_id, &msg_data, 8).is_ok());
         
         let result = fb.receive_message();
         assert!(result.is_ok());
@@ -130,7 +132,7 @@ mod fake_bus_tests {
         msg_data[1] = 6;
 
         //indicate we only want to read 1 byte
-        assert!(fb.send_message(fb.id, &msg_data, 1).is_ok());
+        assert!(fb.send_message(fb.rx_id, &msg_data, 1).is_ok());
         
         let result = fb.receive_message();
         assert!(result.is_ok());
@@ -153,7 +155,7 @@ mod fake_bus_tests {
         msg_data[1] = 6;
 
         //indicate we only want to read 1 byte
-        assert!(fb.send_message(fb.id, &msg_data, 9).is_ok() == false);
+        assert!(fb.send_message(fb.rx_id, &msg_data, 9).is_ok() == false);
     }
 
     #[test]
@@ -179,7 +181,7 @@ mod fake_bus_tests {
         msg_data[0] = 1;
 
         //indicate we only want to read 1 byte
-        assert!(fb.send_message(fb.id, &msg_data, 1).is_ok());
+        assert!(fb.send_message(fb.rx_id, &msg_data, 1).is_ok());
        
         //check that we can spy on the sent data.
         let spy_data = fb.spy_data();
@@ -198,7 +200,7 @@ mod fake_bus_tests {
         msg_data[0] = 1;
 
         //indicate we only want to read 1 byte
-        assert!(fb.send_message(fb.id, &msg_data, 1).is_ok());
-        assert!(fb.spy_id() == fb.id);
+        assert!(fb.send_message(fb.rx_id, &msg_data, 1).is_ok());
+        assert!(fb.spy_id() == fb.rx_id);
     }
 }
