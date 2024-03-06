@@ -143,8 +143,13 @@ mod fake_bus_tests {
         (rx_id, data) = result.unwrap();
 
         assert!(rx_id == 1);
-        assert!(data == msg_data);
+        assert!(data.len() == msg_data.len());
+        
+        for i in 0..msg_data.len() {
+            assert!(data[i] == msg_data[i]);
+        }
     }
+
 
     #[test]
     fn send_receivce_single_byte() {
