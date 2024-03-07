@@ -311,7 +311,7 @@ mod sensor_interface_tests {
 
     #[test]
     fn read_name_command() {
-        let slv_id: u32 = 0x001; 
+        let id: u32 = 0x001; 
         let mut td = setup();
 
         /* SERVER SIDE ACTIONS */
@@ -328,7 +328,7 @@ mod sensor_interface_tests {
         /* CLIENT SIDE ACTIONS */
         
         //read the message.
-        let handler_result = handle_bus_command(slv_id, &mut td.bus, &mut td.sens);
+        let handler_result = handle_bus_command(id, &mut td.bus, &mut td.sens);
         assert!(handler_result.is_ok());
 
         //check that the data is sent back.
@@ -338,6 +338,11 @@ mod sensor_interface_tests {
 
     #[test]
     fn status_request() {
-        assert!(true);
+        let mut td = setup();
+        
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::StatusRequest);
+        assert!(cmd_result.is_ok());
+        
+
     }
 }
