@@ -162,11 +162,6 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
             //send the data.              
             bus.send_message(slv_id, &write_buf)?;
 
-            //clear the buffer.
-            for elem in write_buf.iter_mut() {
-                *elem = 0x00;
-            }
-
         }
         ControllerCommand::StatusRequest => {
 
