@@ -250,7 +250,34 @@ impl SensorInterface for ExampleSensor {
 #[cfg(test)]
 mod sensor_interface_tests {
     use super::*;
-    
+
+    struct TestData{
+        sens: ExampleSensor,
+        bus: FakeBus,
+    }
+
+    fn setup() -> TestData {
+        let sd = SensorData {
+            data: [0x0F, 0xAA, 0x00, 0x55],
+        }; 
+        
+        let fake_sensor = ExampleSensor {
+                sensor_name: SENSOR_NAME,
+                data_types: READING_TYPES,
+                data_names: READING_NAMES,
+                data: sd,
+        };
+
+        let fake_bus = FakeBus::new();
+        
+        let td = TestData{
+            sens: fake_sensor,
+            bus: fake_bus,
+        };
+        
+        td
+    }
+
     #[test]
     fn check_self() {
         assert!(true);
@@ -285,39 +312,27 @@ mod sensor_interface_tests {
     #[test]
     fn read_name_command() {
         let slv_id: u32 = 0x001; 
-        let sd = SensorData {
-            data: [0x0F, 0xAA, 0x00, 0x55],
-        }; 
-
-        let mut exam = ExampleSensor {
-            sensor_name: SENSOR_NAME,
-            data_types: READING_TYPES,
-            data_names: READING_NAMES,
-            data: sd,
-        };
-
-        //create a fake bus instance
-        let mut fake_bus = FakeBus::new();
+        let mut td = setup();
 
         /* SERVER SIDE ACTIONS */
         //make the request using the fake bus.
-        let cmd_result = send_bus_command(&mut fake_bus, &ControllerCommand::NameRequest);
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::NameRequest);
         assert!(cmd_result.is_ok());
 
         //now check the send data.
-        println!("data: {:?}", exam.data.data);
-        println!("bus data: {:?}", fake_bus.spy_data());
-        assert!(fake_bus.spy_id() == 0);
-        assert!(fake_bus.spy_data()[0] == ControllerCommand::NameRequest as u8);
+        println!("data: {:?}", td.sens.data.data);
+        println!("bus data: {:?}", td.bus.spy_data());
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::NameRequest as u8);
 
         /* CLIENT SIDE ACTIONS */
         
         //read the message.
-        let handler_result = handle_bus_command(slv_id, &mut fake_bus, &mut exam);
+        let handler_result = handle_bus_command(slv_id, &mut td.bus, &mut td.sens);
         assert!(handler_result.is_ok());
 
         //check that the data is sent back.
-        assert_eq!(fake_bus.spy_data(), exam.sensor_name.as_bytes());
+        assert_eq!(td.bus.spy_data(), td.sens.sensor_name.as_bytes());
 
     }
 
