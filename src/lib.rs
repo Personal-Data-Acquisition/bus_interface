@@ -1,15 +1,18 @@
-#![cfg_attr(not(test), no_std)]
+//#![cfg_attr(test)]
+//#![no_std]
+
 
 /* Only include the fake/mocked when testing. */
 #[cfg(test)]
 include!("fake_bus.rs");
 
-const MAX_NAME_BYTES_LEN: usize = 64;
-const MAX_WAIT_MS: u32 = 500;
+
+const _MAX_NAME_BYTES_LEN: usize = 64;
+const _MAX_WAIT_MS: u32 = 500;
 const SEND_BUFFER_BYTES: usize = 8;
 const READ_BUFFER_BYTES: usize = 8;
 const CRONTROLLER_ID: u32 = 0;
-const CONTROLLER_BUFFER: usize = 256;
+const _CONTROLLER_BUFFER: usize = 256;
 
 // The Errors that we allow as result's
 #[derive(Debug)]
@@ -22,8 +25,8 @@ pub enum BusError {
 //A simplified bus setup. Will define wrappers for a variety of busses 
 //elsewhere.
 pub trait Bus{
-    fn send_message(&mut self, id: u32, data: &[u8; SEND_BUFFER_BYTES], data_len: usize) -> Result<(), BusError>;
-    fn receive_message(&mut self) -> Result<(u32, [u8; READ_BUFFER_BYTES]), BusError>;
+    fn send_message(&mut self, id: u32, data: &Vec<u8>) -> Result<(), BusError>;
+    fn receive_message(&mut self) -> Result<(u32, Vec<u8>), BusError>;
 }
 
 
@@ -102,9 +105,9 @@ pub enum BusStatus {
 pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<(), BusStatus>{
     match cmd {
         ControllerCommand::NameRequest => {
-            let mut data: [u8; SEND_BUFFER_BYTES] = [0; SEND_BUFFER_BYTES];
-            data[0] = ControllerCommand::NameRequest as u8;
-            let result = bus.send_message(CRONTROLLER_ID, &data, 1);
+            let mut data: Vec<u8> = Vec::with_capacity(SEND_BUFFER_BYTES);
+            data.push(ControllerCommand::NameRequest as u8);
+            let result = bus.send_message(CRONTROLLER_ID, &data);
             if result.is_ok() {
                 return Ok(())
             }
@@ -135,12 +138,57 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<()
     }
 }
 
-
-pub fn handle_bus_command(bus: &mut dyn Bus,_sens: &mut dyn SensorInterface) -> Result<(), BusStatus>{
+//Used by the slave device.
+pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorInterface) -> Result<(), BusError>{
+    
     //get the cmd out of the message.
-    let result = bus.receive_message();
+    let result = bus.receive_message()?;
+    let mut id = 0;
+    let mut master_data: Vec<u8> = Vec::with_capacity(8);
+    (id, master_data) = result;
+    let cmd: ControllerCommand = master_data[0].into();
 
-    //check/handle possible errors.
+    //match the command so we can call a handler.
+    match cmd {
+        ControllerCommand::NameRequest => {
+            //get the data from the sensor interface.
+            let name = sens.get_name().as_bytes();            
+            let mut write_buf: Vec<u8> = vec![];
+            
+            for i in 0..name.len() {
+                write_buf.push(name[i]);
+            }
+
+            //send the data.              
+            bus.send_message(slv_id, &write_buf)?;
+
+        }
+        ControllerCommand::StatusRequest => {
+
+        }
+        ControllerCommand::ResetRequest => {
+
+        }
+        ControllerCommand::FormatingRequest => {
+
+        }
+        ControllerCommand::DnamesRequest => {
+
+        }
+        ControllerCommand::BulkRequest => {
+
+        }
+        ControllerCommand::DataRequest => {
+
+        }
+        ControllerCommand::BadCommand => {
+
+        }
+    }
+
+    //After processing then send the data.
+    //Bus::send_message(
+
     Ok(()) 
 }
 
@@ -202,7 +250,34 @@ impl SensorInterface for ExampleSensor {
 #[cfg(test)]
 mod sensor_interface_tests {
     use super::*;
-    
+
+    struct TestData{
+        sens: ExampleSensor,
+        bus: FakeBus,
+    }
+
+    fn setup() -> TestData {
+        let sd = SensorData {
+            data: [0x0F, 0xAA, 0x00, 0x55],
+        }; 
+        
+        let fake_sensor = ExampleSensor {
+                sensor_name: SENSOR_NAME,
+                data_types: READING_TYPES,
+                data_names: READING_NAMES,
+                data: sd,
+        };
+
+        let fake_bus = FakeBus::new();
+        
+        let td = TestData{
+            sens: fake_sensor,
+            bus: fake_bus,
+        };
+        
+        td
+    }
+
     #[test]
     fn check_self() {
         assert!(true);
@@ -236,40 +311,38 @@ mod sensor_interface_tests {
 
     #[test]
     fn read_name_command() {
-        
-        let sd = SensorData {
-            data: [0x0F, 0xAA, 0x00, 0x55],
-        }; 
-
-        let mut exam = ExampleSensor {
-            sensor_name: SENSOR_NAME,
-            data_types: READING_TYPES,
-            data_names: READING_NAMES,
-            data: sd,
-        };
-
-        //create a fake bus instance
-        let mut fake_bus = FakeBus::new();
+        let id: u32 = 0x001; 
+        let mut td = setup();
 
         /* SERVER SIDE ACTIONS */
         //make the request using the fake bus.
-        let cmd_result = send_bus_command(&mut fake_bus, &ControllerCommand::NameRequest);
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::NameRequest);
         assert!(cmd_result.is_ok());
 
         //now check the send data.
-        println!("data: {:?}", exam.data.data);
-        println!("bus data: {:?}", fake_bus.spy_data());
-        assert!(fake_bus.spy_id() == 0);
-        assert!(fake_bus.spy_data()[0] == ControllerCommand::NameRequest as u8);
+        println!("data: {:?}", td.sens.data.data);
+        println!("bus data: {:?}", td.bus.spy_data());
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::NameRequest as u8);
 
         /* CLIENT SIDE ACTIONS */
         
         //read the message.
-        let handler_result = handle_bus_command(&mut fake_bus, &mut exam);
+        let handler_result = handle_bus_command(id, &mut td.bus, &mut td.sens);
         assert!(handler_result.is_ok());
 
         //check that the data is sent back.
-        assert_eq!(fake_bus.spy_data(), exam.sensor_name.as_bytes());
+        assert_eq!(td.bus.spy_data(), td.sens.sensor_name.as_bytes());
+
+    }
+
+    #[test]
+    fn status_request() {
+        let mut td = setup();
+        
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::StatusRequest);
+        assert!(cmd_result.is_ok());
+        
 
     }
 }

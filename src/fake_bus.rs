@@ -15,8 +15,8 @@ const BYTES_IN_U32: usize = 4;
 pub struct FakeBus {
     tx_id: u32,
     rx_id: u32,
-    num_bytes: usize,
     msg_buffer: [u8; BUFFER_SIZE],
+    msg_size: usize
 }
 
 impl FakeBus {
@@ -24,16 +24,20 @@ impl FakeBus {
         let fb = FakeBus{
             tx_id: 0,
             rx_id: 1,
-            num_bytes: 0,
             msg_buffer: [0; BUFFER_SIZE],
+            msg_size: 0,
         };
         return fb;
     }
 
     //Returns the data bytes from the message.
-    pub fn spy_data(&self) -> [u8; 8] {
-        let mut spy_data: [u8; 8] = [0; 8];
-        spy_data.copy_from_slice(&self.msg_buffer[4..(8 + 4)]);
+    pub fn spy_data(&self) -> Vec<u8> {
+        let mut spy_data: Vec<u8> = vec![];
+        let start: usize = BYTES_IN_U32;
+        let end: usize = self.msg_size + BYTES_IN_U32;
+        for i in start..end{
+            spy_data.push(self.msg_buffer[i]);
+        }
         return spy_data;
     }
 
@@ -46,17 +50,18 @@ impl FakeBus {
               ((self.msg_buffer[3] as u32)>>24)) as u32;
         return id;
     }
+    
 }
 
 impl Bus for FakeBus {
     
-    fn send_message(&mut self, id: u32, data: &[u8; SEND_BUFFER_BYTES], num_bytes: usize) -> Result<(), BusError> {
-        if id > MAX_ID || id < MIN_ID || num_bytes > 8 || num_bytes < 1 {
+    fn send_message(&mut self, id: u32, data: &Vec<u8>) -> Result<(), BusError> {
+        //save needed state variables
+        self.msg_size = data.len();
+
+        if id > MAX_ID || id < MIN_ID { 
             return Err(BusError::BadParameter);
         }
-        
-        //set the number of bytes used.
-        self.num_bytes = num_bytes;
 
         //copy the id + data into the message_buffer, we do some bit shifting.
         let id_buf: [u8; BYTES_IN_U32];
@@ -67,17 +72,20 @@ impl Bus for FakeBus {
         else {
             id_buf = id.to_be_bytes();
         }
+
+
         self.msg_buffer[0..BYTES_IN_U32].copy_from_slice(&id_buf);
         
+        
         //Now copy the data into the msg_buffer as well.
-        self.msg_buffer[BYTES_IN_U32..(num_bytes + BYTES_IN_U32)].copy_from_slice(&data[0..num_bytes]);
+        self.msg_buffer[BYTES_IN_U32..(data.len()+ BYTES_IN_U32)].copy_from_slice(&data[0..data.len()]);
 
         Ok(())
     }
 
-    fn receive_message(&mut self) -> Result<(u32, [u8; READ_BUFFER_BYTES]), BusError> {
+    fn receive_message(&mut self) -> Result<(u32, Vec<u8>), BusError> {
         let id: u32;
-        let mut data: [u8; READ_BUFFER_BYTES] = [0; READ_BUFFER_BYTES];
+        let mut data: Vec<u8> = vec![];
         
         //Read the id from the message.
         if LITTLE_ENDIAN {
@@ -93,13 +101,11 @@ impl Bus for FakeBus {
                   ((self.msg_buffer[0] as u32)>>24)) as u32; 
         }
 
+
         //copy the message into the data array.
-        data.copy_from_slice(
-            &self
-            .msg_buffer[
-                BYTES_IN_U32..(READ_BUFFER_BYTES + BYTES_IN_U32)
-                ]
-            );
+        for i in BYTES_IN_U32..(self.msg_size + BYTES_IN_U32) {
+            data.push(self.msg_buffer[i]);
+        }
 
         Ok((id, data))
     }
@@ -130,87 +136,81 @@ mod fake_bus_tests {
     #[test]
     fn send_receive() {
         let mut fb = FakeBus::new();
-        let msg_data: [u8; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
-        assert!(fb.send_message(fb.rx_id, &msg_data, 8).is_ok());
+        let msg_data: Vec<u8> = vec!(0, 1, 2, 3, 4, 5, 6, 7);
+        assert!(fb.send_message(fb.rx_id, &msg_data).is_ok());
         
         let result = fb.receive_message();
         assert!(result.is_ok());
         
         let rx_id: u32;
-        let data: [u8; 8]; 
+        let data: Vec<u8>; 
         (rx_id, data) = result.unwrap();
 
         assert!(rx_id == 1);
-        assert!(data == msg_data);
+        assert!(data.len() == msg_data.len());
+        
+        for i in 0..msg_data.len() {
+            assert!(data[i] == msg_data[i]);
+        }
     }
+
 
     #[test]
     fn send_receivce_single_byte() {
         let mut fb = FakeBus::new();
-        let mut msg_data: [u8; 8] = [0; 8];
+        let mut msg_data: Vec<u8> = vec!(0);
         
         //set the actual data into it
         msg_data[0] = 1;
-        msg_data[1] = 6;
 
         //indicate we only want to read 1 byte
-        assert!(fb.send_message(fb.rx_id, &msg_data, 1).is_ok());
-        assert!(fb.num_bytes == 1);
-        
+        assert!(fb.send_message(fb.rx_id, &msg_data).is_ok());
+
         let result = fb.receive_message();
         assert!(result.is_ok());
         
         let rx_id: u32;
-        let data: [u8; 8]; 
+        let data: Vec<u8>; 
         (rx_id, data) = result.unwrap();
 
         assert!(rx_id == 1);
-        msg_data = [0; 8];
+        assert!(data.len() == 1);
+        
+        //zero out vector.
+        for elem in msg_data.iter_mut() {
+            *elem = 0x00;
+        }
+
         msg_data[0]= 1;
         assert!(data == msg_data);
     }
 
-    #[test]
-    fn send_bad_msg_len() {
-        let mut fb = FakeBus::new();
-        let mut msg_data: [u8; 8] = [0; 8];
-        
-        //set the actual data into it
-        msg_data[0] = 1;
-        msg_data[1] = 6;
-
-        //indicate we only want to read 1 byte
-        assert!(fb.send_message(fb.rx_id, &msg_data, 9).is_ok() == false);
-    }
 
     #[test]
     fn send_bad_msg_id() {
         const INVALID_ID: u32 = 129;
         let mut fb = FakeBus::new();
-        let mut msg_data: [u8; 8] = [0; 8];
+        let mut msg_data: Vec<u8> = vec!(0, 0, 0, 0, 0, 0, 0, 0);
         
         //set the actual data into it
         msg_data[0] = 1;
         msg_data[1] = 6;
 
         //indicate we only want to read 1 byte
-        assert!(fb.send_message(INVALID_ID, &msg_data, 2).is_ok() == false);
+        assert!(fb.send_message(INVALID_ID, &msg_data).is_ok() == false);
     }
 
     #[test]
     fn spy_data() {
         let mut fb = FakeBus::new();
-        let mut msg_data: [u8; 8] = [0; 8];
+        let msg_data: Vec<u8> = vec!(1, 1, 7);
 
-        //set the actual data into it
-        msg_data[0] = 1;
-
-        //indicate we only want to read 1 byte
-        assert!(fb.send_message(fb.rx_id, &msg_data, 1).is_ok());
+        assert!(fb.send_message(fb.rx_id, &msg_data).is_ok());
        
         //check that we can spy on the sent data.
         let spy_data = fb.spy_data();
         println!("Spy_data: {:?}", spy_data);
+        println!("orig data: {:?}", msg_data);
         
         assert!(spy_data == msg_data);
 
@@ -219,13 +219,13 @@ mod fake_bus_tests {
     #[test]
     fn spy_id() {
         let mut fb = FakeBus::new();
-        let mut msg_data: [u8; 8] = [0; 8];
+        let mut msg_data: Vec<u8> = vec!(0, 0, 0, 0, 0, 0, 0, 0);
 
         //set the actual data into it
         msg_data[0] = 1;
 
         //indicate we only want to read 1 byte
-        assert!(fb.send_message(fb.rx_id, &msg_data, 1).is_ok());
+        assert!(fb.send_message(fb.rx_id, &msg_data).is_ok());
         assert!(fb.spy_id() == fb.rx_id);
     }
 
