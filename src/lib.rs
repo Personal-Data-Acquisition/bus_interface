@@ -106,7 +106,7 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<()
     match cmd {
         ControllerCommand::NameRequest => {
             let mut data: Vec<u8> = Vec::with_capacity(SEND_BUFFER_BYTES);
-            data[0] = ControllerCommand::NameRequest as u8;
+            data.push(ControllerCommand::NameRequest as u8);
             let result = bus.send_message(CRONTROLLER_ID, &data);
             if result.is_ok() {
                 return Ok(())
@@ -143,18 +143,21 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
     
     //get the cmd out of the message.
     let result = bus.receive_message()?;
-    let master_id: u32;
+    let mut id = 0;
     let mut master_data: Vec<u8> = Vec::with_capacity(8);
-    (master_id, master_data) = result;
+    (id, master_data) = result;
     let cmd: ControllerCommand = master_data[0].into();
 
     //match the command so we can call a handler.
     match cmd {
         ControllerCommand::NameRequest => {
             //get the data from the sensor interface.
-            let write_buf_slice = sens.get_name().as_bytes();
-            let mut write_buf: Vec<u8> = Vec::with_capacity(8);
-            write_buf.copy_from_slice(write_buf_slice);
+            let name = sens.get_name().as_bytes();            
+            let mut write_buf: Vec<u8> = vec![];
+            
+            for i in 0..name.len() {
+                write_buf.push(name[i]);
+            }
 
             //send the data.              
             bus.send_message(slv_id, &write_buf)?;
