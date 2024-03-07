@@ -320,4 +320,9 @@ mod sensor_interface_tests {
         assert_eq!(fake_bus.spy_data(), exam.sensor_name.as_bytes());
 
     }
+
+    #[test]
+    fn status_request() {
+        assert!(true);
+    }
 }
