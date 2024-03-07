@@ -32,8 +32,12 @@ impl FakeBus {
 
     //Returns the data bytes from the message.
     pub fn spy_data(&self) -> Vec<u8> {
-        let mut spy_data: Vec<u8> = vec!(0, 0, 0, 0, 0, 0, 0, 0);
-        spy_data.copy_from_slice(&self.msg_buffer[4..(8 + 4)]);
+        let mut spy_data: Vec<u8> = vec![];
+        let start: usize = BYTES_IN_U32;
+        let end: usize = self.msg_size + BYTES_IN_U32;
+        for i in start..end{
+            spy_data.push(self.msg_buffer[i]);
+        }
         return spy_data;
     }
 
@@ -199,17 +203,14 @@ mod fake_bus_tests {
     #[test]
     fn spy_data() {
         let mut fb = FakeBus::new();
-        let mut msg_data: Vec<u8> = vec!(0, 0, 0, 0, 0, 0, 0, 0);
+        let msg_data: Vec<u8> = vec!(1, 1, 7);
 
-        //set the actual data into it
-        msg_data[0] = 1;
-
-        //indicate we only want to read 1 byte
         assert!(fb.send_message(fb.rx_id, &msg_data).is_ok());
        
         //check that we can spy on the sent data.
         let spy_data = fb.spy_data();
         println!("Spy_data: {:?}", spy_data);
+        println!("orig data: {:?}", msg_data);
         
         assert!(spy_data == msg_data);
 
