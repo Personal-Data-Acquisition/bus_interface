@@ -5,8 +5,6 @@
  * Description: A fake implimentation of a bus for testing.
  */
 
-use std::io;
-
 const BUFFER_SIZE: usize = 32;
 const MIN_ID: u32 =  0;
 const MAX_ID: u32 = 128;
@@ -148,8 +146,6 @@ mod fake_bus_tests {
         assert!(data.len() == msg_data.len());
         
         for i in 0..msg_data.len() {
-            println!("sent[{}]: {}", i, msg_data[i]);
-            println!("received[{}]: {}", i, data[i]);
             assert!(data[i] == msg_data[i]);
         }
     }
