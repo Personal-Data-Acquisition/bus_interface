@@ -6,3 +6,17 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+#bxcan = {version = "0.5", optional = true}
+#socketcan = {version = "0.3", optional = true}
+
+[dev-dependencies]
+
+
+
+[features]
+#default = ["can_mock"]
+#can_mock = ["can_mock"] 
+#default = ["socketcan"]
+#bxcan = ["bxcan_impl"]
+#socketcan = ["socketcan_impl"] 
+
