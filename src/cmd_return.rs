@@ -1,5 +1,20 @@
 // The data that gets returned from the command requests.
 #![allow(dead_code)]
+
+
+//considering the use of this C style union.
+//it requires use of 'unsafe' and may not be the best choice.
+#[repr(C)]
+union UData {
+    du8: u8,
+    du16: u16,
+    du32: u32,
+    di8: i8,
+    di16: i16,
+    di32: i32,
+    df32: f32,
+}
+
 #[derive(Debug)]
 pub struct CmdReturn {
     name: String,
