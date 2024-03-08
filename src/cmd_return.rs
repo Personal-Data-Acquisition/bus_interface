@@ -26,9 +26,39 @@ impl CmdReturn {
 mod test_cmdreturn {
     #![allow(unused_imports)]
     use super::*;
+    
+    fn setup() -> CmdReturn {
+        let mut new_response = CmdReturn::new();
+        new_response.name = String::from("aht20");
+        new_response.format = String::from("u16 u16");
+        new_response.data_names = String::from("Temp Humid");
+        new_response.raw_bytes = vec!(0, 255, 0, 255);
+
+        new_response
+    }
 
     #[test]
     fn self_test() {
         assert!(true);
+    }
+
+    #[test]
+    fn test_name() {
+        let mut new_response = CmdReturn::new();
+        new_response.name = String::from("fake_sensor");
+        assert_eq!(new_response.name, String::from("fake_sensor"));
+    }
+
+    #[test]
+    fn parse_to_json() {
+        let ret = setup();
+        let correct_response = String::from("{\"name\":\"aht20\", \"Temp\":\"255\", \"Humid\":\"255\"}");
+        
+        //test list
+        //1. has parse function.
+        let json_str = ret.parse_to_json();
+
+        //2. outputs jason correctly.
+        assert_eq!(json_str, correct_response);
     }
 }
