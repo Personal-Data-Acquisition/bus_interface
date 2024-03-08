@@ -14,6 +14,10 @@ const READ_BUFFER_BYTES: usize = 8;
 const CRONTROLLER_ID: u32 = 0;
 const _CONTROLLER_BUFFER: usize = 256;
 
+// The data that gets returned from the command requests.
+//TODO: add a rust union type here
+
+
 // The Errors that we allow as result's
 #[derive(Debug)]
 pub enum BusError {
@@ -315,7 +319,6 @@ mod sensor_interface_tests {
         let mut td = setup();
 
         /* SERVER SIDE ACTIONS */
-        //make the request using the fake bus.
         let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::NameRequest);
         assert!(cmd_result.is_ok());
 
@@ -325,9 +328,7 @@ mod sensor_interface_tests {
         assert!(td.bus.spy_id() == 0);
         assert!(td.bus.spy_data()[0] == ControllerCommand::NameRequest as u8);
 
-        /* CLIENT SIDE ACTIONS */
-        
-        //read the message.
+        /* CLIENT SIDE ACTIONS */        
         let handler_result = handle_bus_command(id, &mut td.bus, &mut td.sens);
         assert!(handler_result.is_ok());
 
@@ -342,7 +343,7 @@ mod sensor_interface_tests {
         
         let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::StatusRequest);
         assert!(cmd_result.is_ok());
-        
-
+       
+        //check the received sensor status.
     }
 }
