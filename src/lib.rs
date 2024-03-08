@@ -1,6 +1,8 @@
 //#![cfg_attr(test)]
 //#![no_std]
 
+mod cmd_return;
+use cmd_return::CmdReturn;
 
 /* Only include the fake/mocked when testing. */
 #[cfg(test)]
@@ -10,9 +12,11 @@ include!("fake_bus.rs");
 const _MAX_NAME_BYTES_LEN: usize = 64;
 const _MAX_WAIT_MS: u32 = 500;
 const SEND_BUFFER_BYTES: usize = 8;
-const READ_BUFFER_BYTES: usize = 8;
+const _READ_BUFFER_BYTES: usize = 8;
 const CRONTROLLER_ID: u32 = 0;
 const _CONTROLLER_BUFFER: usize = 256;
+
+
 
 // The Errors that we allow as result's
 #[derive(Debug)]
@@ -102,38 +106,41 @@ pub enum BusStatus {
 
 
 // Used by the BUS Master/Controller
-pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<(), BusStatus>{
+pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<CmdReturn, BusStatus>{
+    
+    let ret = CmdReturn::new();
+
     match cmd {
         ControllerCommand::NameRequest => {
             let mut data: Vec<u8> = Vec::with_capacity(SEND_BUFFER_BYTES);
             data.push(ControllerCommand::NameRequest as u8);
             let result = bus.send_message(CRONTROLLER_ID, &data);
             if result.is_ok() {
-                return Ok(())
+                return Ok(ret);
             }
             //impliment a timeout
             return Err(BusStatus::Error)
         }
         ControllerCommand::StatusRequest => {
-            Ok(())
+            Ok(ret)
         }
         ControllerCommand::ResetRequest => {
-            Ok(())
+            Ok(ret)
         }
         ControllerCommand::FormatingRequest => {
-            Ok(())
+            Ok(ret)
         }
         ControllerCommand::DnamesRequest => {
-            Ok(())
+            Ok(ret)
         }
         ControllerCommand::DataRequest => {
-            Ok(())
+            Ok(ret)
         }
         ControllerCommand::BulkRequest => {
-            Ok(())
+            Ok(ret)
         }
         ControllerCommand::BadCommand => {
-            Ok(())
+            Ok(ret)
         }
     }
 }
@@ -143,8 +150,9 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
     
     //get the cmd out of the message.
     let result = bus.receive_message()?;
-    let mut id = 0;
-    let mut master_data: Vec<u8> = Vec::with_capacity(8);
+
+    let id;
+    let mut master_data: Vec<u8> = vec![]; 
     (id, master_data) = result;
     let cmd: ControllerCommand = master_data[0].into();
 
@@ -315,7 +323,6 @@ mod sensor_interface_tests {
         let mut td = setup();
 
         /* SERVER SIDE ACTIONS */
-        //make the request using the fake bus.
         let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::NameRequest);
         assert!(cmd_result.is_ok());
 
@@ -325,9 +332,7 @@ mod sensor_interface_tests {
         assert!(td.bus.spy_id() == 0);
         assert!(td.bus.spy_data()[0] == ControllerCommand::NameRequest as u8);
 
-        /* CLIENT SIDE ACTIONS */
-        
-        //read the message.
+        /* CLIENT SIDE ACTIONS */        
         let handler_result = handle_bus_command(id, &mut td.bus, &mut td.sens);
         assert!(handler_result.is_ok());
 
@@ -342,7 +347,7 @@ mod sensor_interface_tests {
         
         let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::StatusRequest);
         assert!(cmd_result.is_ok());
-        
-
+       
+        //check the received sensor status.
     }
 }
