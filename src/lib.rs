@@ -1,6 +1,8 @@
 //#![cfg_attr(test)]
 //#![no_std]
 
+mod cmd_return;
+use cmd_return::CmdReturn;
 
 /* Only include the fake/mocked when testing. */
 #[cfg(test)]
@@ -10,12 +12,10 @@ include!("fake_bus.rs");
 const _MAX_NAME_BYTES_LEN: usize = 64;
 const _MAX_WAIT_MS: u32 = 500;
 const SEND_BUFFER_BYTES: usize = 8;
-const READ_BUFFER_BYTES: usize = 8;
+const _READ_BUFFER_BYTES: usize = 8;
 const CRONTROLLER_ID: u32 = 0;
 const _CONTROLLER_BUFFER: usize = 256;
 
-// The data that gets returned from the command requests.
-//TODO: add a rust union type here
 
 
 // The Errors that we allow as result's
@@ -106,38 +106,41 @@ pub enum BusStatus {
 
 
 // Used by the BUS Master/Controller
-pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<(), BusStatus>{
+pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<CmdReturn, BusStatus>{
+    
+    let ret = CmdReturn::new();
+
     match cmd {
         ControllerCommand::NameRequest => {
             let mut data: Vec<u8> = Vec::with_capacity(SEND_BUFFER_BYTES);
             data.push(ControllerCommand::NameRequest as u8);
             let result = bus.send_message(CRONTROLLER_ID, &data);
             if result.is_ok() {
-                return Ok(())
+                return Ok(ret);
             }
             //impliment a timeout
             return Err(BusStatus::Error)
         }
         ControllerCommand::StatusRequest => {
-            Ok(())
+            Ok(ret)
         }
         ControllerCommand::ResetRequest => {
-            Ok(())
+            Ok(ret)
         }
         ControllerCommand::FormatingRequest => {
-            Ok(())
+            Ok(ret)
         }
         ControllerCommand::DnamesRequest => {
-            Ok(())
+            Ok(ret)
         }
         ControllerCommand::DataRequest => {
-            Ok(())
+            Ok(ret)
         }
         ControllerCommand::BulkRequest => {
-            Ok(())
+            Ok(ret)
         }
         ControllerCommand::BadCommand => {
-            Ok(())
+            Ok(ret)
         }
     }
 }
