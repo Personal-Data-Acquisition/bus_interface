@@ -18,5 +18,17 @@ impl CmdReturn {
         };
         ret
     }
+    
 
+}
+
+//Tests for the structure
+mod test_cmdreturn {
+    #![allow(unused_imports)]
+    use super::*;
+
+    #[test]
+    fn self_test() {
+        assert!(true);
+    }
 }
