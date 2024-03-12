@@ -109,29 +109,49 @@ pub enum BusStatus {
 pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<CmdReturn, BusStatus>{
     
     let ret = CmdReturn::new();
+    let mut data: Vec<u8> = Vec::with_capacity(SEND_BUFFER_BYTES);
 
     match cmd {
         ControllerCommand::NameRequest => {
-            let mut data: Vec<u8> = Vec::with_capacity(SEND_BUFFER_BYTES);
             data.push(ControllerCommand::NameRequest as u8);
             let result = bus.send_message(CRONTROLLER_ID, &data);
             if result.is_ok() {
                 return Ok(ret);
             }
             //impliment a timeout
-            return Err(BusStatus::Error)
+            return Err(BusStatus::Error);
         }
         ControllerCommand::StatusRequest => {
-            Ok(ret)
+            data.push(ControllerCommand::StatusRequest as u8);
+            let result = bus.send_message(CRONTROLLER_ID, &data);
+            if result.is_ok() {
+                return Ok(ret);
+            }
+            return Err(BusStatus::Error);
         }
         ControllerCommand::ResetRequest => {
-            Ok(ret)
+            data.push(ControllerCommand::ResetRequest as u8);
+            let result = bus.send_message(CRONTROLLER_ID, &data);
+            if result.is_ok() {
+                return Ok(ret);
+            }
+            return Err(BusStatus::Error);
         }
         ControllerCommand::FormatingRequest => {
-            Ok(ret)
+            data.push(ControllerCommand::FormatingRequest as u8);
+            let result = bus.send_message(CRONTROLLER_ID, &data);
+            if result.is_ok() {
+                return Ok(ret);
+            }
+            return Err(BusStatus::Error);
         }
         ControllerCommand::DnamesRequest => {
-            Ok(ret)
+            data.push(ControllerCommand::DnamesRequest as u8);
+            let result = bus.send_message(CRONTROLLER_ID, &data);
+            if result.is_ok() {
+                return Ok(ret);
+            }
+            return Err(BusStatus::Error);
         }
         ControllerCommand::DataRequest => {
             Ok(ret)
@@ -152,16 +172,18 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
     let result = bus.receive_message()?;
 
     let id;
-    let mut master_data: Vec<u8> = vec![]; 
-    (id, master_data) = result;
-    let cmd: ControllerCommand = master_data[0].into();
+    let mut _master_data: Vec<u8> = vec![]; 
+    (id, _master_data) = result;
+    let cmd: ControllerCommand = _master_data[0].into();
+    println!("id: {:?}\n", id);
+
+    let mut write_buf: Vec<u8> = vec![];
 
     //match the command so we can call a handler.
     match cmd {
         ControllerCommand::NameRequest => {
             //get the data from the sensor interface.
             let name = sens.get_name().as_bytes();            
-            let mut write_buf: Vec<u8> = vec![];
             
             for i in 0..name.len() {
                 write_buf.push(name[i]);
@@ -172,21 +194,42 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
 
         }
         ControllerCommand::StatusRequest => {
+            let status = sens.get_status() as u8;
+            write_buf.push(status); 
+            bus.send_message(slv_id, &write_buf)?;
 
         }
         ControllerCommand::ResetRequest => {
+            let status = sens.soft_reset() as u8;
+            write_buf.push(status); 
+            bus.send_message(slv_id, &write_buf)?;
 
         }
         ControllerCommand::FormatingRequest => {
+            let formatting = sens.get_format().as_bytes(); 
+            
+            for i in 0..formatting.len() {
+                write_buf.push(formatting[i]);
+            }
+
+            bus.send_message(slv_id, &write_buf)?;
 
         }
         ControllerCommand::DnamesRequest => {
 
-        }
-        ControllerCommand::BulkRequest => {
+            let data_names = sens.get_data_names().as_bytes(); 
+            
+            for i in 0..data_names.len() {
+                write_buf.push(data_names[i]);
+            }
+
+            bus.send_message(slv_id, &write_buf)?;
 
         }
         ControllerCommand::DataRequest => {
+
+        }
+        ControllerCommand::BulkRequest => {
 
         }
         ControllerCommand::BadCommand => {
@@ -194,8 +237,6 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
         }
     }
 
-    //After processing then send the data.
-    //Bus::send_message(
 
     Ok(()) 
 }
@@ -347,7 +388,87 @@ mod sensor_interface_tests {
         
         let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::StatusRequest);
         assert!(cmd_result.is_ok());
+
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::StatusRequest as u8);
        
         //check the received sensor status.
+        let handler_result = handle_bus_command(0x001, &mut td.bus, &mut td.sens);
+        assert!(handler_result.is_ok());
+
+        //check the status was sent back.
+        assert_eq!(td.bus.spy_data()[0], td.sens.get_status() as u8);
     }
+
+    #[test]
+    fn reset_request() {
+        let mut td = setup();
+        
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::ResetRequest);
+        assert!(cmd_result.is_ok());
+
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::ResetRequest as u8);
+
+        let handler_result = handle_bus_command(0x001, &mut td.bus, &mut td.sens);
+        assert!(handler_result.is_ok());
+
+        //check the status was sent back.
+        assert_eq!(td.bus.spy_data()[0], td.sens.soft_reset() as u8);
+    }
+
+    #[test]
+    fn formatting_request() {
+        
+        let mut td = setup();
+        
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::FormatingRequest);
+        assert!(cmd_result.is_ok());
+
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::FormatingRequest as u8);
+
+        let handler_result = handle_bus_command(0x001, &mut td.bus, &mut td.sens);
+        assert!(handler_result.is_ok());
+
+        //check the formatting sent back.
+        assert_eq!(READING_TYPES.as_bytes() , td.bus.spy_data());
+    }
+
+    #[test]
+    fn data_names_request() {
+
+        let mut td = setup();
+        
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::DnamesRequest);
+        assert!(cmd_result.is_ok());
+
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::DnamesRequest as u8);
+
+        let handler_result = handle_bus_command(0x001, &mut td.bus, &mut td.sens);
+        assert!(handler_result.is_ok());
+
+        //check the formatting sent back.
+        assert_eq!(READING_NAMES.as_bytes() , td.bus.spy_data());
+    }
+
+    #[test]
+    fn data_request() {
+        
+        let mut td = setup();
+        
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::DataRequest);
+        assert!(cmd_result.is_ok());
+
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::DataRequest as u8);
+
+        let handler_result = handle_bus_command(0x001, &mut td.bus, &mut td.sens);
+        assert!(handler_result.is_ok());
+
+        //check the formatting sent back.
+        //assert_eq!(READING_NAMES.as_bytes() , td.bus.spy_data());
+    }
+
 }
