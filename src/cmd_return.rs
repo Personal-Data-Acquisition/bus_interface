@@ -17,10 +17,10 @@ union UData {
 
 #[derive(Debug)]
 pub struct CmdReturn {
-    name: String,
-    format: Vec<String>,
-    data_names: Vec<String>,
-    raw_bytes: Vec<u8>,
+    pub name: String,
+    pub format: Vec<String>,
+    pub data_names: Vec<String>,
+    pub raw_bytes: Vec<u8>,
 }
 
 impl CmdReturn {
@@ -32,7 +32,7 @@ impl CmdReturn {
             raw_bytes: vec![],
         };
         ret
-    }  
+    }
 
     pub fn parse_to_json(&self) -> String {
         let mut json = String::new();
@@ -174,4 +174,5 @@ mod test_cmdreturn {
         //2. outputs jason correctly.
         assert_eq!(json_str, correct_response);
     }
+
 }

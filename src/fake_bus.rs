@@ -107,6 +107,7 @@ impl Bus for FakeBus {
             data.push(self.msg_buffer[i]);
         }
 
+
         Ok((id, data))
     }
 }
