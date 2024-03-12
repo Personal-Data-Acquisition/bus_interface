@@ -131,6 +131,11 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
             return Err(BusStatus::Error);
         }
         ControllerCommand::ResetRequest => {
+            data.push(ControllerCommand::ResetRequest as u8);
+            let result = bus.send_message(CRONTROLLER_ID, &data);
+            if result.is_ok() {
+                return Ok(ret);
+            }
             Ok(ret)
         }
         ControllerCommand::FormatingRequest => {
@@ -186,6 +191,9 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
 
         }
         ControllerCommand::ResetRequest => {
+            let status = sens.soft_reset() as u8;
+            write_buf.push(status); 
+            bus.send_message(slv_id, &write_buf)?;
 
         }
         ControllerCommand::FormatingRequest => {
@@ -378,11 +386,12 @@ mod sensor_interface_tests {
         assert!(cmd_result.is_ok());
 
         assert!(td.bus.spy_id() == 0);
-        assert!(td.bus.spy_data()[0] == ControllerCommand::StatusRequest as u8);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::ResetRequest as u8);
 
         let handler_result = handle_bus_command(0x001, &mut td.bus, &mut td.sens);
         assert!(handler_result.is_ok());
 
-
+        //check the status was sent back.
+        assert_eq!(td.bus.spy_data()[0], td.sens.soft_reset() as u8);
     }
 }
