@@ -127,7 +127,6 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
             if result.is_ok() {
                 return Ok(ret);
             }
-
             return Err(BusStatus::Error);
         }
         ControllerCommand::ResetRequest => {
@@ -136,10 +135,15 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
             if result.is_ok() {
                 return Ok(ret);
             }
-            Ok(ret)
+            return Err(BusStatus::Error);
         }
         ControllerCommand::FormatingRequest => {
-            Ok(ret)
+            data.push(ControllerCommand::FormatingRequest as u8);
+            let result = bus.send_message(CRONTROLLER_ID, &data);
+            if result.is_ok() {
+                return Ok(ret);
+            }
+            return Err(BusStatus::Error);
         }
         ControllerCommand::DnamesRequest => {
             Ok(ret)
