@@ -226,10 +226,10 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
             bus.send_message(slv_id, &write_buf)?;
 
         }
-        ControllerCommand::BulkRequest => {
+        ControllerCommand::DataRequest => {
 
         }
-        ControllerCommand::DataRequest => {
+        ControllerCommand::BulkRequest => {
 
         }
         ControllerCommand::BadCommand => {
@@ -452,4 +452,7 @@ mod sensor_interface_tests {
         //check the formatting sent back.
         assert_eq!(READING_NAMES.as_bytes() , td.bus.spy_data());
     }
+
+    #[test]
+
 }
