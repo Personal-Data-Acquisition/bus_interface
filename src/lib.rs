@@ -146,7 +146,12 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
             return Err(BusStatus::Error);
         }
         ControllerCommand::DnamesRequest => {
-            Ok(ret)
+            data.push(ControllerCommand::DnamesRequest as u8);
+            let result = bus.send_message(CRONTROLLER_ID, &data);
+            if result.is_ok() {
+                return Ok(ret);
+            }
+            return Err(BusStatus::Error);
         }
         ControllerCommand::DataRequest => {
             Ok(ret)
@@ -211,6 +216,14 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
 
         }
         ControllerCommand::DnamesRequest => {
+
+            let data_names = sens.get_data_names().as_bytes(); 
+            
+            for i in 0..data_names.len() {
+                write_buf.push(data_names[i]);
+            }
+
+            bus.send_message(slv_id, &write_buf)?;
 
         }
         ControllerCommand::BulkRequest => {
