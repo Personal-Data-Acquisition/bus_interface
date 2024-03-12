@@ -394,4 +394,22 @@ mod sensor_interface_tests {
         //check the status was sent back.
         assert_eq!(td.bus.spy_data()[0], td.sens.soft_reset() as u8);
     }
+
+    #[test]
+    fn formatting_request() {
+        
+        let mut td = setup();
+        
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::FormatingRequest);
+        assert!(cmd_result.is_ok());
+
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::FormatingRequest as u8);
+
+        let handler_result = handle_bus_command(0x001, &mut td.bus, &mut td.sens);
+        assert!(handler_result.is_ok());
+
+        //check the formatting sent back.
+        assert_eq!(READING_TYPES.as_bytes() , td.bus.spy_data());
+    }
 }
