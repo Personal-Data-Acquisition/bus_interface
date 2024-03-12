@@ -201,6 +201,13 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
 
         }
         ControllerCommand::FormatingRequest => {
+            let formatting = sens.get_format().as_bytes(); 
+            
+            for i in 0..formatting.len() {
+                write_buf.push(formatting[i]);
+            }
+
+            bus.send_message(slv_id, &write_buf)?;
 
         }
         ControllerCommand::DnamesRequest => {
