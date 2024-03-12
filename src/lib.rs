@@ -4,9 +4,15 @@
 mod cmd_return;
 use cmd_return::CmdReturn;
 
-/* Only include the fake/mocked when testing. */
+/* Include all the files when we test them. */
 #[cfg(test)]
 include!("fake_bus.rs");
+
+#[cfg(test)]
+include!("handler.rs");
+
+#[cfg(test)]
+include!("controller.rs");
 
 
 const _MAX_NAME_BYTES_LEN: usize = 64;
@@ -105,157 +111,6 @@ pub enum BusStatus {
 }
 
 
-// Used by the BUS Master/Controller
-pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<CmdReturn, BusStatus>{
-    
-    let mut ret = CmdReturn::new();
-    let mut data: Vec<u8> = Vec::with_capacity(SEND_BUFFER_BYTES);
-
-    match cmd {
-        ControllerCommand::NameRequest => {
-            data.push(ControllerCommand::NameRequest as u8);
-            let result = bus.send_message(CRONTROLLER_ID, &data);
-            if result.is_err() {
-                return Err(BusStatus::Error);
-            }
-
-            let result = bus.receive_message();
-            if result.is_err() {
-                return Err(BusStatus::Error);
-            }
-            let _id: u32;
-            let data: Vec<u8>;
-            (_id, data) = result.ok().unwrap();
-            println!("data: {:?}", data);
-            let str_encode_ret = String::from_utf8(data);
-            match str_encode_ret {
-                Ok(v) => ret.name = v,
-                Err(_e) => return Err(BusStatus::DataErr),
-            };
-            
-            println!("ret.name {}", ret.name);
-            return Ok(ret);
-        }
-        ControllerCommand::StatusRequest => {
-            data.push(ControllerCommand::StatusRequest as u8);
-            let result = bus.send_message(CRONTROLLER_ID, &data);
-            if result.is_ok() {
-                return Ok(ret);
-            }
-            return Err(BusStatus::Error);
-        }
-        ControllerCommand::ResetRequest => {
-            data.push(ControllerCommand::ResetRequest as u8);
-            let result = bus.send_message(CRONTROLLER_ID, &data);
-            if result.is_ok() {
-                return Ok(ret);
-            }
-            return Err(BusStatus::Error);
-        }
-        ControllerCommand::FormatingRequest => {
-            data.push(ControllerCommand::FormatingRequest as u8);
-            let result = bus.send_message(CRONTROLLER_ID, &data);
-            if result.is_ok() {
-                return Ok(ret);
-            }
-            return Err(BusStatus::Error);
-        }
-        ControllerCommand::DnamesRequest => {
-            data.push(ControllerCommand::DnamesRequest as u8);
-            let result = bus.send_message(CRONTROLLER_ID, &data);
-            if result.is_ok() {
-                return Ok(ret);
-            }
-            return Err(BusStatus::Error);
-        }
-        ControllerCommand::DataRequest => {
-            Ok(ret)
-        }
-        ControllerCommand::BulkRequest => {
-            Ok(ret)
-        }
-        ControllerCommand::BadCommand => {
-            Ok(ret)
-        }
-    }
-}
-
-//Used by the slave device.
-pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorInterface) -> Result<(), BusError>{
-    
-    //get the cmd out of the message.
-    let result = bus.receive_message()?;
-
-    let id;
-    let mut _master_data: Vec<u8> = vec![]; 
-    (id, _master_data) = result;
-    let cmd: ControllerCommand = _master_data[0].into();
-    println!("id: {:?}\n", id);
-
-    let mut write_buf: Vec<u8> = vec![];
-
-    //match the command so we can call a handler.
-    match cmd {
-        ControllerCommand::NameRequest => {
-            //get the data from the sensor interface.
-            let name = sens.get_name().as_bytes();            
-            
-            for i in 0..name.len() {
-                write_buf.push(name[i]);
-            }
-
-            //send the data.              
-            bus.send_message(slv_id, &write_buf)?;
-
-        }
-        ControllerCommand::StatusRequest => {
-            let status = sens.get_status() as u8;
-            write_buf.push(status); 
-            bus.send_message(slv_id, &write_buf)?;
-
-        }
-        ControllerCommand::ResetRequest => {
-            let status = sens.soft_reset() as u8;
-            write_buf.push(status); 
-            bus.send_message(slv_id, &write_buf)?;
-
-        }
-        ControllerCommand::FormatingRequest => {
-            let formatting = sens.get_format().as_bytes(); 
-            
-            for i in 0..formatting.len() {
-                write_buf.push(formatting[i]);
-            }
-
-            bus.send_message(slv_id, &write_buf)?;
-
-        }
-        ControllerCommand::DnamesRequest => {
-
-            let data_names = sens.get_data_names().as_bytes(); 
-            
-            for i in 0..data_names.len() {
-                write_buf.push(data_names[i]);
-            }
-
-            bus.send_message(slv_id, &write_buf)?;
-
-        }
-        ControllerCommand::DataRequest => {
-
-        }
-        ControllerCommand::BulkRequest => {
-
-        }
-        ControllerCommand::BadCommand => {
-
-        }
-    }
-
-
-    Ok(()) 
-}
-
 #[allow(dead_code)]
 pub struct SensorData {
     data: [u8; MAX_DATA],
@@ -311,15 +166,6 @@ impl SensorInterface for ExampleSensor {
 }
 
 
-#[cfg(test)]
-mod handler_tests {
-
-}
-
-#[cfg(test)]
-mod controller_tests {
-
-}
 
 #[cfg(test)]
 mod sensor_interface_tests {
@@ -503,5 +349,4 @@ mod sensor_interface_tests {
         //check the formatting sent back.
         //assert_eq!(READING_NAMES.as_bytes() , td.bus.spy_data());
     }
-
 }
