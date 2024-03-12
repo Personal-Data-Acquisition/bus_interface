@@ -237,8 +237,6 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
         }
     }
 
-    //After processing then send the data.
-    //Bus::send_message(
 
     Ok(()) 
 }
