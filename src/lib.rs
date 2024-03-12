@@ -349,5 +349,7 @@ mod sensor_interface_tests {
         assert!(cmd_result.is_ok());
        
         //check the received sensor status.
+        let handler_result = handle_bus_command(0x001, &mut td.bus, &mut td.sens);
+        assert!(handler_result.is_ok());
     }
 }
