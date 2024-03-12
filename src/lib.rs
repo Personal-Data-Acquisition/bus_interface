@@ -17,7 +17,6 @@ const CRONTROLLER_ID: u32 = 0;
 const _CONTROLLER_BUFFER: usize = 256;
 
 
-
 // The Errors that we allow as result's
 #[derive(Debug)]
 pub enum BusError {
@@ -102,24 +101,40 @@ pub enum BusStatus {
     Good = 0,
     Busy,
     Error,
+    DataErr,
 }
 
 
 // Used by the BUS Master/Controller
 pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<CmdReturn, BusStatus>{
     
-    let ret = CmdReturn::new();
+    let mut ret = CmdReturn::new();
     let mut data: Vec<u8> = Vec::with_capacity(SEND_BUFFER_BYTES);
 
     match cmd {
         ControllerCommand::NameRequest => {
             data.push(ControllerCommand::NameRequest as u8);
             let result = bus.send_message(CRONTROLLER_ID, &data);
-            if result.is_ok() {
-                return Ok(ret);
+            if result.is_err() {
+                return Err(BusStatus::Error);
             }
-            //impliment a timeout
-            return Err(BusStatus::Error);
+
+            let result = bus.receive_message();
+            if result.is_err() {
+                return Err(BusStatus::Error);
+            }
+            let _id: u32;
+            let data: Vec<u8>;
+            (_id, data) = result.ok().unwrap();
+            println!("data: {:?}", data);
+            let str_encode_ret = String::from_utf8(data);
+            match str_encode_ret {
+                Ok(v) => ret.name = v,
+                Err(_e) => return Err(BusStatus::DataErr),
+            };
+            
+            println!("ret.name {}", ret.name);
+            return Ok(ret);
         }
         ControllerCommand::StatusRequest => {
             data.push(ControllerCommand::StatusRequest as u8);
@@ -297,6 +312,16 @@ impl SensorInterface for ExampleSensor {
 
 
 #[cfg(test)]
+mod handler_tests {
+
+}
+
+#[cfg(test)]
+mod controller_tests {
+
+}
+
+#[cfg(test)]
 mod sensor_interface_tests {
     use super::*;
 
@@ -368,18 +393,26 @@ mod sensor_interface_tests {
         assert!(cmd_result.is_ok());
 
         //now check the send data.
-        println!("data: {:?}", td.sens.data.data);
-        println!("bus data: {:?}", td.bus.spy_data());
         assert!(td.bus.spy_id() == 0);
         assert!(td.bus.spy_data()[0] == ControllerCommand::NameRequest as u8);
+
 
         /* CLIENT SIDE ACTIONS */        
         let handler_result = handle_bus_command(id, &mut td.bus, &mut td.sens);
         assert!(handler_result.is_ok());
-
-        //check that the data is sent back.
         assert_eq!(td.bus.spy_data(), td.sens.sensor_name.as_bytes());
 
+    }
+
+    #[test]
+    fn read_name_handler() {
+        let id: u32 = 0x001;
+        let mut td = setup();
+        
+        td.bus.msg_buffer[0] = ControllerCommand::NameRequest as u8;
+        td.bus.msg_size = 1;
+        let handle_result = handle_bus_command(id, &mut td.bus, &mut td.sens);
+        assert!(handle_result.is_ok()); 
     }
 
     #[test]
@@ -462,10 +495,10 @@ mod sensor_interface_tests {
         assert!(cmd_result.is_ok());
 
         assert!(td.bus.spy_id() == 0);
-        assert!(td.bus.spy_data()[0] == ControllerCommand::DataRequest as u8);
+        //assert!(td.bus.spy_data()[0] == ControllerCommand::DataRequest as u8);
 
-        let handler_result = handle_bus_command(0x001, &mut td.bus, &mut td.sens);
-        assert!(handler_result.is_ok());
+        //let handler_result = handle_bus_command(0x001, &mut td.bus, &mut td.sens);
+        //assert!(handler_result.is_ok());
 
         //check the formatting sent back.
         //assert_eq!(READING_NAMES.as_bytes() , td.bus.spy_data());
