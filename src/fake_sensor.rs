@@ -12,8 +12,8 @@
  * The values for it are static strings that are comma seperated. 
  */
 pub const SENSOR_NAME: &str = "Fakesensor";
-pub const READING_NAMES: &str = "Temperature, Humidity";
-pub const READING_TYPES: &str = "u16, u16";
+pub const READING_NAMES: &str = "Status Temperature, Humidity";
+pub const READING_TYPES: &str = "u8 u16, u16";
 
 
 //This is a structure just used to show how it works,
