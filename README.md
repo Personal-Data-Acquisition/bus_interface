@@ -1,21 +1,40 @@
 # Bus_interface
 
-A template for creating or implimenting sensor shim layers.
+The interface repo/crate for connecting sensor_modules to a bus controller.
 
-## Where is all the documentation?
+Abstracts away the physical hardware and bus being used to allow for platform
+agnostic communications.
 
+## Goals 
 
-## What is a sensor shim layer?
-
-A sensor shim layer is a thin layer of code between the sensor driver the rest
-of your code.
-
-It provides a unified interface for all sensors that can self identify the 
-sensor over a bus or network to a main controller.
-
-## How do I use it?
-
-##
+* Be Bus independant.
+* Be hardware/sensor independent.
+* Allow Plug and play of new sensor_modules.
 
 
+## Running tests
 
+```sh
+
+cd ./bus_interface
+cargo test
+```
+
+## Using for sensor_module(embedded)
+
+```toml
+
+[dependencies]
+
+
+```
+
+
+## Using for Bus Controller
+
+```toml
+
+[dependencies]
+
+
+```
