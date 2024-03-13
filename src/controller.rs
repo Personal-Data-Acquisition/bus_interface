@@ -66,12 +66,14 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
             };
         }
         ControllerCommand::StatusRequest => {
-            println!("StatusRequest()!");
             ret.data_names.push(String::from("Status"));
             ret.format.push(String::from("u8"));
             ret.raw_bytes.push(data[0]);
         }
         ControllerCommand::ResetRequest => {
+            ret.data_names.push(String::from("Status"));
+            ret.format.push(String::from("u8"));
+            ret.raw_bytes.push(data[0]);
         }
         ControllerCommand::FormatingRequest => {
         }
@@ -166,11 +168,38 @@ mod controller_tests {
         // send the controller command
         let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::StatusRequest);
         assert!(cmd_result.is_ok());
+
+        // now check the send data.
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::StatusRequest as u8);
         
         // Check returned data.
         let cmd_data = cmd_result.ok().unwrap();
         assert_eq!(cmd_data.format[0], "u8");
         assert_eq!(cmd_data.data_names[0], "Status");
         assert_eq!(SensorStatus::Ready as u8, cmd_data.raw_bytes[0]); 
+    }
+
+    #[test]
+    fn reset_request() {
+        let mut td = setup();
+
+        // Preload the response
+        let reset_data: Vec<u8> = vec![SensorStatus::Busy as u8]; 
+        assert!(td.bus.set_rmsg_data(&reset_data).is_ok());
+
+        // Send the controller cmd
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::ResetRequest);
+        assert!(cmd_result.is_ok());
+
+        // now check the send data.
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::ResetRequest as u8);
+
+        // check returned data.
+        let cmd_data = cmd_result.ok().unwrap();
+        assert_eq!(cmd_data.format[0], "u8");
+        assert_eq!(cmd_data.data_names[0], "Status");
+        assert_eq!(SensorStatus::Busy as u8, cmd_data.raw_bytes[0]); 
     }
 }
