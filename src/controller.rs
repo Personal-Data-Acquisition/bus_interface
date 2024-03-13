@@ -76,6 +76,7 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
             ret.raw_bytes.push(data[0]);
         }
         ControllerCommand::FormatingRequest => {
+            //Parse the returned data delimited by spaces.
         }
         ControllerCommand::DnamesRequest => {
         }
@@ -202,4 +203,29 @@ mod controller_tests {
         assert_eq!(cmd_data.data_names[0], "Status");
         assert_eq!(SensorStatus::Busy as u8, cmd_data.raw_bytes[0]); 
     }
+
+    #[test]
+    fn formatting_request() {
+        
+        let mut td = setup();
+
+        // Preload the response
+        let format_data: Vec<u8> = String::from("u8 u16 u16").into_bytes(); 
+        assert!(td.bus.set_rmsg_data(&format_data).is_ok());
+
+        // Send the controller cmd
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::FormatingRequest);
+        assert!(cmd_result.is_ok());
+
+        // now check the send data.
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::FormatingRequest as u8);
+
+        // check returned data.
+        let cmd_data = cmd_result.ok().unwrap();
+        assert_eq!(cmd_data.format[0], "u8");
+        assert_eq!(cmd_data.format[1], "u16");
+        assert_eq!(cmd_data.format[2], "u16");
+    }
+
 }
