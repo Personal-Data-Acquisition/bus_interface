@@ -38,28 +38,6 @@ impl CmdReturn {
 
     }
 
-    pub fn parse_to_json(&self) -> String {
-        let mut json = String::new();
-        //1. add the name json.
-        json.push_str("{\"name\":\"");
-        json.push_str(&self.name);
-        json.push_str("\"");
-
-        let data_strings = self.bytes_to_strings();
-
-        //2. Add the data.
-        for i in 0..self.data_names.len() {
-            json.push_str(", \"");
-            json.push_str(&self.data_names[i]);
-            json.push_str("\":\"");
-            json.push_str(&data_strings[i]);
-            json.push_str("\"");
-        }
-        
-        json.push_str("}");
-
-        json
-    }
 
     fn bytes_to_strings(&self) -> Vec<String> {
         let mut data: Vec<String> = vec![]; 
@@ -169,19 +147,6 @@ mod test_cmdreturn {
 
 
     #[test]
-    fn test_parse_to_json() {
-        let ret = setup();
-        let correct_response = String::from("{\"name\":\"aht20\", \"Temp\":\"255\", \"Humid\":\"255\"}");
-        
-        //test list
-        //1. has parse function.
-        let json_str = ret.parse_to_json();
-
-        //2. outputs jason correctly.
-        assert_eq!(json_str, correct_response);
-    }
-
-    #[test]
     fn test_parse_raw_to_format() {
         
         //setup the conditions for the test
@@ -191,6 +156,9 @@ mod test_cmdreturn {
        
         //check that it's currently empty.
         assert_eq!(ret.format.len(), 0);
+
+        //call the cut(code under test)
+        ret.parse_raw_to_format();
 
         //check that it parses correctly
         assert_eq!(ret.format.len(), 3);
