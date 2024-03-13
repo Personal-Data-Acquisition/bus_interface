@@ -18,10 +18,12 @@ pub struct FakeBus {
     msg_buffer: [u8; BUFFER_SIZE],
     rmsg_buffer: [u8; BUFFER_SIZE],
     msg_size: usize,
+    rmsg_size: usize,
     auto_response: bool
 }
 
 impl FakeBus {
+    
     pub fn new() -> FakeBus {
         let fb = FakeBus{
             tx_id: 0,
@@ -29,10 +31,12 @@ impl FakeBus {
             msg_buffer: [0; BUFFER_SIZE],
             rmsg_buffer: [0; BUFFER_SIZE],
             msg_size: 0,
+            rmsg_size: 0,
             auto_response: false,
         };
         return fb;
     }
+
 
     //Returns the data bytes from the message.
     pub fn spy_data(&self) -> Vec<u8> {
@@ -45,6 +49,7 @@ impl FakeBus {
         return spy_data;
     }
 
+
     //Returns the id of the message in the buffer.
     pub fn spy_id(&self) -> u32 {
         let id: u32;
@@ -55,6 +60,7 @@ impl FakeBus {
         return id;
     }
 
+
     pub fn set_rmsg_data(&mut self, d: &Vec<u8>) -> Result<(), &'static str> {
         if d.len() > BUFFER_SIZE {
             return Err("Passed vector too big!");
@@ -63,9 +69,12 @@ impl FakeBus {
         for i in 0..d.len(){
             self.rmsg_buffer[i + 4] = d[i];
         }
+        
+        self.rmsg_size = d.len();
 
         return Ok(());
     }
+
 
     pub fn regular_receive(&mut self) -> Result<(u32, Vec<u8>), BusError> {
         let id: u32;
@@ -94,6 +103,7 @@ impl FakeBus {
         Ok((id, data))
     }
 
+
     pub fn auto_receive(&mut self) -> Result<(u32, Vec<u8>), BusError> {
         let id: u32;
         let mut data: Vec<u8> = vec![];
@@ -112,16 +122,14 @@ impl FakeBus {
                   ((self.rmsg_buffer[0] as u32)>>24)) as u32; 
         }
 
-
         //copy the message into the data array.
-        for i in BYTES_IN_U32..(self.msg_size + BYTES_IN_U32) {
+        for i in BYTES_IN_U32..(self.rmsg_size + BYTES_IN_U32) {
             data.push(self.rmsg_buffer[i]);
         }
-
         Ok((id, data))
-
     }
 }
+
 
 impl Bus for FakeBus {
     
@@ -143,15 +151,14 @@ impl Bus for FakeBus {
             id_buf = id.to_be_bytes();
         }
 
-
         self.msg_buffer[0..BYTES_IN_U32].copy_from_slice(&id_buf);
-        
-        
+                
         //Now copy the data into the msg_buffer as well.
         self.msg_buffer[BYTES_IN_U32..(data.len()+ BYTES_IN_U32)].copy_from_slice(&data[0..data.len()]);
 
         Ok(())
     }
+
 
     fn receive_message(&mut self) -> Result<(u32, Vec<u8>), BusError> {
         if self.auto_response {
@@ -292,6 +299,7 @@ mod fake_bus_tests {
         for i in 0..data.len() {
             assert_eq!(fb.rmsg_buffer[i+4], data[i]);
         }
-    }
 
+        assert_eq!(fb.rmsg_size, data.len());
+    }
 }
