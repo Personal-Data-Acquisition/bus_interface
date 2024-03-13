@@ -55,8 +55,6 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
     let data: Vec<u8>;
     (_id, data) = result.ok().unwrap();
 
-    println!("cmd: {:?}", cmd);
-
     match cmd {
         ControllerCommand::NameRequest => {
             let str_encode_ret = String::from_utf8(data);
@@ -83,6 +81,11 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
             }
         }
         ControllerCommand::DnamesRequest => {
+            ret.raw_bytes = data;
+            let res = ret.parse_raw_to_dnames();
+            if ! res.is_ok() {
+                return Err(BusStatus::DataErr);
+            }
         }
         ControllerCommand::DataRequest => {
         }
