@@ -34,8 +34,26 @@ impl CmdReturn {
         ret
     }
 
-    pub fn parse_raw_to_format(&mut self) {
+    pub fn parse_raw_to_format(&mut self) -> Result<(), &'static str>{
+        //steps
+        //1. convert raw bytes to string.
+        let res = String::from_utf8(self.raw_bytes.clone());
 
+        if res.is_err() {
+            return Err("Error: Issue converting rawbytes into string!");
+        }
+
+        let tmp_str = res.unwrap();
+
+        //2. iterate through "words" delimited by spaecs.
+        let fmt_strs: Vec<_> = tmp_str.split(" ").collect(); 
+       
+        //3. push into the format variable.
+        for s in fmt_strs.iter() {
+            self.format.push(s.to_string())
+        }
+
+        return Ok(());
     }
 
 
@@ -145,7 +163,6 @@ mod test_cmdreturn {
         assert_eq!(new_response.name, String::from("fake_sensor"));
     }
 
-
     #[test]
     fn test_parse_raw_to_format() {
         
@@ -158,7 +175,8 @@ mod test_cmdreturn {
         assert_eq!(ret.format.len(), 0);
 
         //call the cut(code under test)
-        ret.parse_raw_to_format();
+        let res = ret.parse_raw_to_format();
+        assert!(res.is_ok());
 
         //check that it parses correctly
         assert_eq!(ret.format.len(), 3);
