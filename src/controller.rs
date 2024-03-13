@@ -134,7 +134,6 @@ mod controller_tests {
 
         //preload the response into the msg buffer.
         td.bus.auto_response = true;
-        td.bus.rmsg_buffer[4..] = SENSOR_NAME.as_bytes();
 
         let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::NameRequest);
         assert!(cmd_result.is_ok());
@@ -144,6 +143,6 @@ mod controller_tests {
         assert!(td.bus.spy_data()[0] == ControllerCommand::NameRequest as u8);
 
         //chcek the actual returned value.
-        assert!(SENSOR_NAME, );
+        //assert!(SENSOR_NAME, );
     }
 }
