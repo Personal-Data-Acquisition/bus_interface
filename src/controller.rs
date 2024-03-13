@@ -6,8 +6,6 @@
  */
 
 
-//include!("fake_sensor.rs");
-
 // Used by the BUS Master/Controller
 pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<CmdReturn, BusStatus>{
     
@@ -117,11 +115,11 @@ mod controller_tests {
 
         let fake_bus = FakeBus::new();
         
-        let td = TestData{
+        let mut td = TestData{
             sens: fake_sensor,
             bus: fake_bus,
         };
-        
+        td.bus.auto_response = true;
         td
     }
 
@@ -134,29 +132,38 @@ mod controller_tests {
     fn name_request() {
         let mut td = setup();
 
-        //preload the response into the msg buffer.
-        td.bus.auto_response = true;
+        // preload the response into the msg buffer.
         let name_data: Vec<u8> = SENSOR_NAME.as_bytes().to_vec();
-        println!("name_data: {:?}", name_data);
-        println!("name_data: {:?}", String::from_utf8(name_data.clone()));
-        println!("name_data.len() {}", name_data.len());
         let set_res = td.bus.set_rmsg_data(&name_data);
         assert!(set_res.is_ok());
-        println!("rmsg_buffer {:?}", td.bus.rmsg_buffer);
 
-
+        // send the controller command
         let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::NameRequest);
         assert!(cmd_result.is_ok());
-        println!("cmd_result: {:?}", cmd_result);
 
-        //now check the send data.
+        // now check the send data.
         assert!(td.bus.spy_id() == 0);
         assert!(td.bus.spy_data()[0] == ControllerCommand::NameRequest as u8);
 
-        //chcek the actual returned value.
+        // chcek the actual returned value.
         let cmd_data = cmd_result.ok().unwrap();
-        println!("cmd_data.name {}", cmd_data.name);
-        println!("SENSOR_NAME {}", SENSOR_NAME);
-        assert!(SENSOR_NAME == cmd_data.name);
+        assert_eq!(SENSOR_NAME, cmd_data.name);
+    }
+
+    #[test]
+    fn status_request() {
+        let mut td = setup();
+
+        // Preload the response
+        let status_data: Vec<u8> = vec![]; 
+        assert!(td.bus.set_rmsg_data(&status_data).is_ok());
+       
+        // send the controller command
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::NameRequest);
+        assert!(cmd_result.is_ok());
+        
+        // Check returned data.
+        let cmd_data = cmd_result.ok().unwrap();
+        //assert_eq!(
     }
 }
