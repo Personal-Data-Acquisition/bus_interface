@@ -10,7 +10,7 @@
 pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<CmdReturn, BusStatus>{
     
     let mut ret = CmdReturn::new();
-    let mut data: Vec<u8> = Vec::with_capacity(SEND_BUFFER_BYTES);
+    let mut data: Vec<u8> = vec![]; // Vec::with_capacity(SEND_BUFFER_BYTES);
 
     match cmd {
         ControllerCommand::NameRequest => {
@@ -55,16 +55,21 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
     let data: Vec<u8>;
     (_id, data) = result.ok().unwrap();
 
+    println!("cmd: {:?}", cmd);
+
     match cmd {
         ControllerCommand::NameRequest => {
-            println!("CC data.len(): {:?}", data.len());
             let str_encode_ret = String::from_utf8(data);
             match str_encode_ret {
                 Ok(v) => ret.name = v,
                 Err(_e) => return Err(BusStatus::DataErr),
             };
         }
-        ControllerCommand::StatusRequest => { 
+        ControllerCommand::StatusRequest => {
+            println!("StatusRequest()!");
+            ret.data_names.push(String::from("Status"));
+            ret.format.push(String::from("u8"));
+            ret.raw_bytes.push(data[0]);
         }
         ControllerCommand::ResetRequest => {
         }
@@ -79,7 +84,7 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
         ControllerCommand::BadCommand => {
         }
     }
-
+    println!("ret: {:?}", ret);
     return Ok(ret);
 }
 
@@ -155,15 +160,17 @@ mod controller_tests {
         let mut td = setup();
 
         // Preload the response
-        let status_data: Vec<u8> = vec![]; 
+        let status_data: Vec<u8> = vec![SensorStatus::Ready as u8]; 
         assert!(td.bus.set_rmsg_data(&status_data).is_ok());
        
         // send the controller command
-        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::NameRequest);
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::StatusRequest);
         assert!(cmd_result.is_ok());
         
         // Check returned data.
         let cmd_data = cmd_result.ok().unwrap();
-        //assert_eq!(
+        assert_eq!(cmd_data.format[0], "u8");
+        assert_eq!(cmd_data.data_names[0], "Status");
+        assert_eq!(SensorStatus::Ready as u8, cmd_data.raw_bytes[0]); 
     }
 }
