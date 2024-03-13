@@ -81,7 +81,6 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
             if ! res.is_ok() {
                 return Err(BusStatus::DataErr);
             }
-
         }
         ControllerCommand::DnamesRequest => {
         }
@@ -233,4 +232,31 @@ mod controller_tests {
         assert_eq!(cmd_data.format[2], "u16");
     }
 
+    #[test]
+    fn data_names_request() {
+        let mut td = setup();
+
+        // Preload the response.
+        let data_names: Vec<u8> = String::from("Status Temp Humid").into_bytes();
+        assert!(td.bus.set_rmsg_data(&data_names).is_ok());
+
+        // Send the controller cmd
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::DnamesRequest);
+        assert!(cmd_result.is_ok());
+
+        // Now check the sent data.
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::DnamesRequest as u8);
+
+        // Check the returned data.
+        let cmd_data = cmd_result.ok().unwrap();
+        assert_eq!(cmd_data.data_names[0], "Status");
+        assert_eq!(cmd_data.data_names[1], "Temp");
+        assert_eq!(cmd_data.data_names[2], "Humid");
+    }
+    
+    #[test]
+    fn data_request() {
+        assert!(false);
+    }
 }
