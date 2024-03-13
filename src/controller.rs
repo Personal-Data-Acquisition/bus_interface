@@ -76,7 +76,12 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
             ret.raw_bytes.push(data[0]);
         }
         ControllerCommand::FormatingRequest => {
-            //Parse the returned data delimited by spaces.
+            ret.raw_bytes = data;
+            let res = ret.parse_raw_to_format();
+            if ! res.is_ok() {
+                return Err(BusStatus::DataErr);
+            }
+
         }
         ControllerCommand::DnamesRequest => {
         }
