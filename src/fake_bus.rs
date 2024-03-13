@@ -55,12 +55,13 @@ impl FakeBus {
         return id;
     }
 
-    pub fn set_rmsg_data(&self, d: Vec<u8>) -> Result<(), Err()> {
+    pub fn set_rmsg_data(&mut self, d: &Vec<u8>) -> Result<(), &'static str> {
         if d.len() > BUFFER_SIZE {
-            return Err("Passed vector too big");
+            return Err("Passed vector too big!");
         }
 
-        for i in 0..BUFFER_SIZE {
+        for i in 0..d.len(){
+            self.rmsg_buffer[i + 4] = d[i];
         }
 
         return Ok(());
@@ -280,5 +281,17 @@ mod fake_bus_tests {
         assert!(fb.spy_id() == fb.rx_id);
     }
 
+    #[test]
+    fn set_rmsg_data() {
+        let mut fb = FakeBus::new();
+       
+        let data: Vec<u8> = vec![0, 1, 2, 3];
+        let res = fb.set_rmsg_data(&data);
+        assert!(res.is_ok());
+    
+        for i in 0..data.len() {
+            assert_eq!(fb.rmsg_buffer[i+4], data[i]);
+        }
+    }
 
 }
