@@ -34,6 +34,10 @@ impl CmdReturn {
         ret
     }
 
+    pub fn parse_raw_to_format(&mut self) {
+
+    }
+
     pub fn parse_to_json(&self) -> String {
         let mut json = String::new();
         //1. add the name json.
@@ -139,8 +143,10 @@ mod test_cmdreturn {
     fn setup() -> CmdReturn {
         let mut new_response = CmdReturn::new();
         new_response.name = String::from("aht20");
+        new_response.format.push(String::from("u8"));
         new_response.format.push(String::from("u16"));
         new_response.format.push(String::from("u16"));
+        new_response.data_names.push(String::from("Status"));
         new_response.data_names.push(String::from("Temp"));
         new_response.data_names.push(String::from("Humid"));
         new_response.raw_bytes = vec!(0, 255, 0, 255);
@@ -175,4 +181,23 @@ mod test_cmdreturn {
         assert_eq!(json_str, correct_response);
     }
 
+    #[test]
+    fn test_parse_raw_to_format() {
+        
+        //setup the conditions for the test
+        let mut ret = setup();
+        ret.format = vec![];
+        ret.raw_bytes = String::from("u8 u16 u16").into_bytes();
+       
+        //check that it's currently empty.
+        assert_eq!(ret.format.len(), 0);
+
+        //check that it parses correctly
+        assert_eq!(ret.format.len(), 3);
+        assert_eq!(ret.format[0], String::from("u8"));
+        assert_eq!(ret.format[1], String::from("u16"));
+        assert_eq!(ret.format[2], String::from("u16"));
+
+        //clean up 
+    }
 }
