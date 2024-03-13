@@ -16,7 +16,9 @@ pub struct FakeBus {
     tx_id: u32,
     rx_id: u32,
     msg_buffer: [u8; BUFFER_SIZE],
-    msg_size: usize
+    rmsg_buffer: [u8; BUFFER_SIZE],
+    msg_size: usize,
+    auto_response: bool
 }
 
 impl FakeBus {
@@ -25,7 +27,9 @@ impl FakeBus {
             tx_id: 0,
             rx_id: 1,
             msg_buffer: [0; BUFFER_SIZE],
+            rmsg_buffer: [0; BUFFER_SIZE],
             msg_size: 0,
+            auto_response: false,
         };
         return fb;
     }
@@ -50,7 +54,72 @@ impl FakeBus {
               ((self.msg_buffer[3] as u32)>>24)) as u32;
         return id;
     }
-    
+
+    pub fn set_rmsg_data(&self, d: Vec<u8>) -> Result<(), Err()> {
+        if d.len() > BUFFER_SIZE {
+            return Err("Passed vector too big");
+        }
+
+        for i in 0..BUFFER_SIZE {
+        }
+
+        return Ok(());
+    }
+
+    pub fn regular_receive(&mut self) -> Result<(u32, Vec<u8>), BusError> {
+        let id: u32;
+        let mut data: Vec<u8> = vec![];
+        
+        //Read the id from the message.
+        if LITTLE_ENDIAN {
+            id = ((self.msg_buffer[0] as u32) | 
+                  ((self.msg_buffer[1] as u32)>>8) | 
+                  ((self.msg_buffer[2] as u32)>>16) | 
+                  ((self.msg_buffer[3] as u32)>>24)) as u32; 
+        }
+        else {
+            id = ((self.msg_buffer[3] as u32) | 
+                  ((self.msg_buffer[2] as u32)>>8) | 
+                  ((self.msg_buffer[1] as u32)>>16) | 
+                  ((self.msg_buffer[0] as u32)>>24)) as u32; 
+        }
+
+
+        //copy the message into the data array.
+        for i in BYTES_IN_U32..(self.msg_size + BYTES_IN_U32) {
+            data.push(self.msg_buffer[i]);
+        }
+
+        Ok((id, data))
+    }
+
+    pub fn auto_receive(&mut self) -> Result<(u32, Vec<u8>), BusError> {
+        let id: u32;
+        let mut data: Vec<u8> = vec![];
+        
+        //Read the id from the message.
+        if LITTLE_ENDIAN {
+            id = ((self.rmsg_buffer[0] as u32) | 
+                  ((self.rmsg_buffer[1] as u32)>>8) | 
+                  ((self.rmsg_buffer[2] as u32)>>16) | 
+                  ((self.rmsg_buffer[3] as u32)>>24)) as u32; 
+        }
+        else {
+            id = ((self.rmsg_buffer[3] as u32) | 
+                  ((self.rmsg_buffer[2] as u32)>>8) | 
+                  ((self.rmsg_buffer[1] as u32)>>16) | 
+                  ((self.rmsg_buffer[0] as u32)>>24)) as u32; 
+        }
+
+
+        //copy the message into the data array.
+        for i in BYTES_IN_U32..(self.msg_size + BYTES_IN_U32) {
+            data.push(self.rmsg_buffer[i]);
+        }
+
+        Ok((id, data))
+
+    }
 }
 
 impl Bus for FakeBus {
@@ -84,31 +153,12 @@ impl Bus for FakeBus {
     }
 
     fn receive_message(&mut self) -> Result<(u32, Vec<u8>), BusError> {
-        let id: u32;
-        let mut data: Vec<u8> = vec![];
-        
-        //Read the id from the message.
-        if LITTLE_ENDIAN {
-            id = ((self.msg_buffer[0] as u32) | 
-                  ((self.msg_buffer[1] as u32)>>8) | 
-                  ((self.msg_buffer[2] as u32)>>16) | 
-                  ((self.msg_buffer[3] as u32)>>24)) as u32; 
+        if self.auto_response {
+            self.auto_receive()
         }
         else {
-            id = ((self.msg_buffer[3] as u32) | 
-                  ((self.msg_buffer[2] as u32)>>8) | 
-                  ((self.msg_buffer[1] as u32)>>16) | 
-                  ((self.msg_buffer[0] as u32)>>24)) as u32; 
+            self.regular_receive()
         }
-
-
-        //copy the message into the data array.
-        for i in BYTES_IN_U32..(self.msg_size + BYTES_IN_U32) {
-            data.push(self.msg_buffer[i]);
-        }
-
-
-        Ok((id, data))
     }
 }
 
@@ -230,8 +280,5 @@ mod fake_bus_tests {
         assert!(fb.spy_id() == fb.rx_id);
     }
 
-    #[test]
-    fn num_bytes() {
 
-    }
 }
