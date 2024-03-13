@@ -1,7 +1,6 @@
 // The data that gets returned from the command requests.
 #![allow(dead_code)]
 
-
 //considering the use of this C style union.
 //it requires use of 'unsafe' and may not be the best choice.
 #[repr(C)]
@@ -34,7 +33,7 @@ impl CmdReturn {
         ret
     }
 
-    pub fn parse_raw_to_format(&mut self) -> Result<(), &'static str>{
+    pub fn parse_raw_to_dnames(&mut self) -> Result<(), &'static str> {
         //steps
         //1. convert raw bytes to string.
         let res = String::from_utf8(self.raw_bytes.clone());
@@ -46,8 +45,32 @@ impl CmdReturn {
         let tmp_str = res.unwrap();
 
         //2. iterate through "words" delimited by spaecs.
-        let fmt_strs: Vec<_> = tmp_str.split(" ").collect(); 
+        let dname_strs: Vec<_> = tmp_str.split(" ").collect(); 
        
+        //3. push into the format variable.
+        for s in dname_strs.iter() {
+            self.data_names.push(s.to_string())
+        }
+
+        return Ok(());
+    }
+
+    pub fn parse_raw_to_format(&mut self) -> Result<(), &'static str>{
+        //steps
+        //1. convert raw bytes to string.
+        let res = String::from_utf8(self.raw_bytes.clone());
+        println!("res {:?}", res);
+
+        if res.is_err() {
+            return Err("Error: Issue converting rawbytes into string!");
+        }
+
+        let tmp_str = res.unwrap();
+
+        //2. iterate through "words" delimited by spaecs.
+        let fmt_strs: Vec<_> = tmp_str.split(" ").collect(); 
+        println!("fmt_strs {:?}", fmt_strs);
+
         //3. push into the format variable.
         for s in fmt_strs.iter() {
             self.format.push(s.to_string())
@@ -183,6 +206,31 @@ mod test_cmdreturn {
         assert_eq!(ret.format[0], String::from("u8"));
         assert_eq!(ret.format[1], String::from("u16"));
         assert_eq!(ret.format[2], String::from("u16"));
+
+        //clean up 
+    }
+
+
+    #[test]
+    fn test_parse_raw_to_dnames() {
+        //setup the conditions for the test
+        let mut ret = setup();
+        ret.data_names= vec![];
+        ret.raw_bytes = String::from("Status Temp Humid").into_bytes();
+       
+        //check that it's currently empty.
+        assert_eq!(ret.data_names.len(), 0);
+
+        //call the cut(code under test)
+        let res = ret.parse_raw_to_dnames();
+        assert!(res.is_ok());
+        println!("ret {:?}", ret); 
+
+        //check that it parses correctly
+        assert_eq!(ret.data_names.len(), 3);
+        assert_eq!(ret.data_names[0], String::from("Status"));
+        assert_eq!(ret.data_names[1], String::from("Temp"));
+        assert_eq!(ret.data_names[2], String::from("Humid"));
 
         //clean up 
     }
