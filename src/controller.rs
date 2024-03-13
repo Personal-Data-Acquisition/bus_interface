@@ -271,12 +271,28 @@ mod controller_tests {
         assert_eq!(cmd_data.data_names[2], "Humid");
     }
 
-    /*
+
     #[test]
     fn data_request() {
-        assert!(false);
+        let mut td = setup();
+
+        // Preload the response.
+        let sensor_data: Vec<u8> = vec![0, 0, 255, 0, 255];
+        assert!(td.bus.set_rmsg_data(&sensor_data).is_ok());
+
+        // Send the controller cmd
+        let dname: String = String::from("all");
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::DataRequest, dname);
+        assert!(cmd_result.is_ok());
+
+        // Now check the sent data.
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::DataRequest as u8);
+
+        // Check the returned data.
+        let cmd_data = cmd_result.ok().unwrap();
     }
-    */
+
 
     #[test]
     fn bulk_request() {
