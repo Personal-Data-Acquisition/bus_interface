@@ -7,7 +7,11 @@
 
 
 // Used by the BUS Master/Controller
-pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<CmdReturn, BusStatus>{
+pub fn send_bus_command(
+    bus: &mut dyn Bus,
+    cmd: &ControllerCommand,
+    dname: String) -> Result<CmdReturn,BusStatus>
+{
     
     let mut ret = CmdReturn::new();
     let mut data: Vec<u8> = vec![]; // Vec::with_capacity(SEND_BUFFER_BYTES);
@@ -29,7 +33,10 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
             data.push(ControllerCommand::DnamesRequest as u8);
         }
         ControllerCommand::DataRequest => {
-            data.push(ControllerCommand::DnamesRequest as u8);
+            data.push(ControllerCommand::DataRequest as u8);
+            for byte in dname.into_bytes().iter() {
+                data.push(*byte);
+            }
         }
         ControllerCommand::BulkRequest => {
             data.push(ControllerCommand::BulkRequest as u8);
@@ -88,6 +95,7 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
             }
         }
         ControllerCommand::DataRequest => {
+            ret.raw_bytes = data;
         }
         ControllerCommand::BulkRequest => {
         }
@@ -153,7 +161,8 @@ mod controller_tests {
         assert!(set_res.is_ok());
 
         // send the controller command
-        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::NameRequest);
+        let dname: String = String::new(); 
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::NameRequest, dname);
         assert!(cmd_result.is_ok());
 
         // now check the send data.
@@ -174,7 +183,8 @@ mod controller_tests {
         assert!(td.bus.set_rmsg_data(&status_data).is_ok());
        
         // send the controller command
-        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::StatusRequest);
+        let dname: String = String::new(); 
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::StatusRequest, dname);
         assert!(cmd_result.is_ok());
 
         // now check the send data.
@@ -197,7 +207,8 @@ mod controller_tests {
         assert!(td.bus.set_rmsg_data(&reset_data).is_ok());
 
         // Send the controller cmd
-        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::ResetRequest);
+        let dname: String = String::new(); 
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::ResetRequest, dname);
         assert!(cmd_result.is_ok());
 
         // now check the send data.
@@ -221,7 +232,8 @@ mod controller_tests {
         assert!(td.bus.set_rmsg_data(&format_data).is_ok());
 
         // Send the controller cmd
-        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::FormatingRequest);
+        let dname: String = String::new(); 
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::FormatingRequest, dname);
         assert!(cmd_result.is_ok());
 
         // now check the send data.
@@ -244,7 +256,8 @@ mod controller_tests {
         assert!(td.bus.set_rmsg_data(&data_names).is_ok());
 
         // Send the controller cmd
-        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::DnamesRequest);
+        let dname: String = String::new(); 
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::DnamesRequest, dname);
         assert!(cmd_result.is_ok());
 
         // Now check the sent data.
@@ -257,9 +270,34 @@ mod controller_tests {
         assert_eq!(cmd_data.data_names[1], "Temp");
         assert_eq!(cmd_data.data_names[2], "Humid");
     }
-    
+
+    /*
     #[test]
     fn data_request() {
         assert!(false);
+    }
+    */
+
+    #[test]
+    fn bulk_request() {
+
+        let mut td = setup();
+
+        // Preload the response.
+        let sensor_data: Vec<u8> = vec![];
+        assert!(td.bus.set_rmsg_data(&sensor_data).is_ok());
+
+        // Send the controller cmd
+        let dname: String = String::from("all");
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::BulkRequest, dname);
+        assert!(cmd_result.is_ok());
+
+        // Now check the sent data.
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::BulkRequest as u8);
+
+        // Check the returned data.
+        let cmd_data = cmd_result.ok().unwrap();
+        assert_eq!(true, true);
     }
 }
