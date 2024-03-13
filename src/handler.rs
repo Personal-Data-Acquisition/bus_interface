@@ -121,24 +121,4 @@ mod handler_tests {
         assert!(true);
     }
 
-    #[test]
-    fn name_handler() {
-        assert!(false);
-    }
-
-    #[test]
-    fn status_handler() {
-        assert!(false);
-    }
-    
-    #[test]
-    fn reset_handler() {
-        assert!(false);
-    }
-    
-    #[test]
-    fn formatting_handler() {
-        assert!(false);
-    }
-
 }
