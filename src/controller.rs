@@ -5,6 +5,9 @@
  * Desc: File to be included for SBC(single board computer). 
  */
 
+
+//include!("fake_sensor.rs");
+
 // Used by the BUS Master/Controller
 pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<CmdReturn, BusStatus>{
     
@@ -14,70 +17,75 @@ pub fn send_bus_command(bus: &mut dyn Bus, cmd: &ControllerCommand) -> Result<Cm
     match cmd {
         ControllerCommand::NameRequest => {
             data.push(ControllerCommand::NameRequest as u8);
-            let result = bus.send_message(CRONTROLLER_ID, &data);
-            if result.is_err() {
-                return Err(BusStatus::Error);
-            }
+        }
+        ControllerCommand::StatusRequest => {
+            data.push(ControllerCommand::StatusRequest as u8);
+        }
+        ControllerCommand::ResetRequest => {
+            data.push(ControllerCommand::ResetRequest as u8);
+        }
+        ControllerCommand::FormatingRequest => {
+            data.push(ControllerCommand::FormatingRequest as u8);
+        }
+        ControllerCommand::DnamesRequest => {
+            data.push(ControllerCommand::DnamesRequest as u8);
+        }
+        ControllerCommand::DataRequest => {
+            data.push(ControllerCommand::DnamesRequest as u8);
+        }
+        ControllerCommand::BulkRequest => {
+            data.push(ControllerCommand::BulkRequest as u8);
+        }
+        ControllerCommand::BadCommand => {
+            data.push(ControllerCommand::BadCommand as u8);
+        }
+    }
+    
+    let result = bus.send_message(CRONTROLLER_ID, &data);
+    if result.is_err() {
+        return Err(BusStatus::Error);
+    }
 
-            let result = bus.receive_message();
-            if result.is_err() {
-                return Err(BusStatus::Error);
-            }
-            let _id: u32;
-            let data: Vec<u8>;
-            (_id, data) = result.ok().unwrap();
-            println!("data: {:?}", data);
+    
+    /* Now we try to get the response from the bus */
+    let result = bus.receive_message();
+    if result.is_err() {
+        return Err(BusStatus::Error);
+    }
+    
+    let _id: u32;
+    let data: Vec<u8>;
+    (_id, data) = result.ok().unwrap();
+
+    match cmd {
+        ControllerCommand::NameRequest => {
             let str_encode_ret = String::from_utf8(data);
             match str_encode_ret {
                 Ok(v) => ret.name = v,
                 Err(_e) => return Err(BusStatus::DataErr),
             };
-            
-            println!("ret.name {}", ret.name);
-            return Ok(ret);
         }
-        ControllerCommand::StatusRequest => {
-            data.push(ControllerCommand::StatusRequest as u8);
-            let result = bus.send_message(CRONTROLLER_ID, &data);
-            if result.is_ok() {
-                return Ok(ret);
-            }
-            return Err(BusStatus::Error);
+        ControllerCommand::StatusRequest => { 
         }
         ControllerCommand::ResetRequest => {
-            data.push(ControllerCommand::ResetRequest as u8);
-            let result = bus.send_message(CRONTROLLER_ID, &data);
-            if result.is_ok() {
-                return Ok(ret);
-            }
-            return Err(BusStatus::Error);
         }
         ControllerCommand::FormatingRequest => {
-            data.push(ControllerCommand::FormatingRequest as u8);
-            let result = bus.send_message(CRONTROLLER_ID, &data);
-            if result.is_ok() {
-                return Ok(ret);
-            }
-            return Err(BusStatus::Error);
         }
         ControllerCommand::DnamesRequest => {
-            data.push(ControllerCommand::DnamesRequest as u8);
-            let result = bus.send_message(CRONTROLLER_ID, &data);
-            if result.is_ok() {
-                return Ok(ret);
-            }
-            return Err(BusStatus::Error);
         }
         ControllerCommand::DataRequest => {
-            Ok(ret)
         }
         ControllerCommand::BulkRequest => {
-            Ok(ret)
         }
         ControllerCommand::BadCommand => {
-            Ok(ret)
         }
     }
+
+    return Ok(ret);
+}
+
+fn initiate_request(cmd: ControllerCommand) {
+    assert!(false);
 }
 
 
@@ -119,5 +127,23 @@ mod controller_tests {
     fn check_self() {
         assert!(true);
     }
+    
+    #[test]
+    fn name_request() {
+        let mut td = setup();
 
+        //preload the response into the msg buffer.
+        td.bus.auto_response = true;
+        td.bus.rmsg_buffer[4..] = SENSOR_NAME.as_bytes();
+
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::NameRequest);
+        assert!(cmd_result.is_ok());
+
+        //now check the send data.
+        assert!(td.bus.spy_id() == 0);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::NameRequest as u8);
+
+        //chcek the actual returned value.
+        assert!(SENSOR_NAME, );
+    }
 }
