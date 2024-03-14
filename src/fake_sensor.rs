@@ -6,6 +6,8 @@
  */
 
 
+pub const NUM_TYPES: usize = 3;
+
 /*
  * This section shows how you should impliment
  * the traits for an sensor kinda.
@@ -22,8 +24,8 @@ pub const READING_TYPES: &str = "u8 u16, u16";
 #[allow(dead_code)]
 struct ExampleSensor{
     sensor_name: &'static str,
-    data_types: &'static str,
-    data_names: &'static str,
+    data_types: [&'static str; NUM_TYPES],
+    data_names: [&'static str; NUM_TYPES],
     data: SensorData,
 }
 
@@ -75,8 +77,8 @@ mod fake_sensor_test {
         
         let fake_sensor = ExampleSensor {
                 sensor_name: SENSOR_NAME,
-                data_types: READING_TYPES,
-                data_names: READING_NAMES,
+                data_types: ["u8", "u16", "u16"],
+                data_names: ["Status", "Temp", "Humid"],
                 data: sd,
         };
 
