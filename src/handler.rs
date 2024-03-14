@@ -196,4 +196,24 @@ mod handler_tests {
         // Check that the response is correct.
         assert_eq!(td.bus.spy_data(), td.sens.data_names.as_bytes());
     }
+
+    #[test]
+    fn data_handler() {
+        let mut td = setup();
+        let slv_id: u32 = 0x01;
+
+        // Preload the needed test data.
+        let mut data_name = String::from("Temp").into_bytes();
+        let mut data: Vec<u8> = vec![ControllerCommand::DnamesRequest as u8];
+        data.append(&mut data_name);
+        assert!(td.bus.set_rmsg_data(&data).is_ok());
+
+        // Call the code under test.
+        assert!(handle_bus_command(slv_id, &mut td.bus, &mut td.sens).is_ok());
+        
+        // Check that the response is correct.
+        assert_eq!(td.bus.spy_data()[0], td.sens.data.data[0]);
+        assert_eq!(td.bus.spy_data()[1], td.sens.data.data[1]);
+    }
+
 }
