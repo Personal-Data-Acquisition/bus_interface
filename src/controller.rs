@@ -281,7 +281,7 @@ mod controller_tests {
         assert!(td.bus.set_rmsg_data(&sensor_data).is_ok());
 
         // Send the controller cmd
-        let dname: String = String::from("all");
+        let dname: String = String::from("Temp");
         let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::DataRequest, dname);
         assert!(cmd_result.is_ok());
 
@@ -291,6 +291,8 @@ mod controller_tests {
 
         // Check the returned data.
         let cmd_data = cmd_result.ok().unwrap();
+        assert_eq!(cmd_data.raw_bytes[0], sensor_data[1]);
+        assert_eq!(cmd_data.raw_bytes[1], sensor_data[2]);
     }
 
 
