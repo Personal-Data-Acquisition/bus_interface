@@ -63,6 +63,7 @@ impl From<u8> for ControllerCommand {
             3 => ControllerCommand::FormatingRequest,
             4 => ControllerCommand::DnamesRequest,
             5 => ControllerCommand::DataRequest,
+            _ => ControllerCommand::ResetRequest
         }
     }
 }
