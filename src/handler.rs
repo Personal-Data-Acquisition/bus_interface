@@ -102,17 +102,33 @@ mod handler_tests {
 
         let fake_bus = FakeBus::new();
         
-        let td = TestData{
+        let mut td = TestData{
             sens: fake_sensor,
             bus: fake_bus,
         };
-        
+        td.bus.auto_response = true;
         td
     }
 
     #[test]
     fn check_self() {
         assert!(true);
+    }
+
+    #[test]
+    fn name_handler() {
+        let mut td = setup();
+        let slv_id: u32 = 0x01;
+
+        // Preload the needed test data.
+        let data: Vec<u8> = vec![ControllerCommand::NameRequest as u8];
+        assert!(td.bus.set_rmsg_data(&data).is_ok());
+
+        // Call the code under test.
+        assert!(handle_bus_command(slv_id, &mut td.bus, &mut td.sens).is_ok());
+        
+        // Check that the response is correct.
+        assert_eq!(td.bus.spy_data(), td.sens.sensor_name.as_bytes());
     }
 
 }
