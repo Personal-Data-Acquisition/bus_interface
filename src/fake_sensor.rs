@@ -11,7 +11,6 @@ pub const NUM_TYPES: usize = 3;
 /*
  * This section shows how you should impliment
  * the traits for an sensor kinda.
- * The values for it are static strings that are comma seperated. 
  */
 pub const SENSOR_NAME: &str = "Fakesensor";
 pub const READING_NAMES: &str = "Status Temp Humid";
