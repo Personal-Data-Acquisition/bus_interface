@@ -122,8 +122,8 @@ mod controller_tests {
         
         let fake_sensor = ExampleSensor {
                 sensor_name: SENSOR_NAME,
-                data_types: READING_TYPES,
-                data_names: READING_NAMES,
+                data_types: ["u8", "u16", "u16"],
+                data_names: ["Status", "Temp", "Humid"],
                 data: sd,
         };
 
