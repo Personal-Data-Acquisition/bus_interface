@@ -163,4 +163,21 @@ mod handler_tests {
         // Check that the response is correct.
         assert_eq!(td.bus.spy_data()[0], td.sens.soft_reset() as u8);
     }
+
+    #[test]
+    fn formating_handler() {
+        
+        let mut td = setup();
+        let slv_id: u32 = 0x01;
+
+        // Preload the needed test data.
+        let data: Vec<u8> = vec![ControllerCommand::FormatingRequest as u8];
+        assert!(td.bus.set_rmsg_data(&data).is_ok());
+
+        // Call the code under test.
+        assert!(handle_bus_command(slv_id, &mut td.bus, &mut td.sens).is_ok());
+        
+        // Check that the response is correct.
+        assert_eq!(td.bus.spy_data(), td.sens.data_types.as_bytes());
+    }
 }
