@@ -52,8 +52,6 @@ pub enum ControllerCommand {
     FormatingRequest,  //Gives the format of sensor's readings.
     DnamesRequest,     //Gives the data's names, (volts/temp/humidity etc)
     DataRequest,       //For requests of the sensor's data for individual type.
-    BulkRequest,       //For requesting all the availble types of data.
-    BadCommand,        //To represent invalid or bad commands.
 }
 
 impl From<u8> for ControllerCommand {
@@ -65,8 +63,6 @@ impl From<u8> for ControllerCommand {
             3 => ControllerCommand::FormatingRequest,
             4 => ControllerCommand::DnamesRequest,
             5 => ControllerCommand::DataRequest,
-            6 => ControllerCommand::BulkRequest,
-            _ => ControllerCommand::BadCommand,
         }
     }
 }
