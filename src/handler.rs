@@ -95,8 +95,8 @@ mod handler_tests {
         
         let fake_sensor = ExampleSensor {
                 sensor_name: SENSOR_NAME,
-                data_types: READING_TYPES,
-                data_names: READING_NAMES,
+                data_types: ["u8", "u16", "u16"],
+                data_names: ["Status", "Temp", "Humid"],
                 data: sd,
         };
 
@@ -178,7 +178,12 @@ mod handler_tests {
         assert!(handle_bus_command(slv_id, &mut td.bus, &mut td.sens).is_ok());
         
         // Check that the response is correct.
-        assert_eq!(td.bus.spy_data(), td.sens.data_types.as_bytes());
+        let mut tmps: String = String::new();
+        tmps.push_str(td.sens.data_types[0]); tmps.push_str(" ");
+        tmps.push_str(td.sens.data_types[1]); tmps.push_str(" ");
+        tmps.push_str(td.sens.data_types[2]); 
+        println!("tmps: {}", tmps);
+        assert_eq!(td.bus.spy_data(), tmps.into_bytes());
     }
 
     #[test]
@@ -194,7 +199,11 @@ mod handler_tests {
         assert!(handle_bus_command(slv_id, &mut td.bus, &mut td.sens).is_ok());
         
         // Check that the response is correct.
-        assert_eq!(td.bus.spy_data(), td.sens.data_names.as_bytes());
+        let mut tmps: String = String::new();
+        tmps.push_str(td.sens.data_names[0]); tmps.push_str(" ");
+        tmps.push_str(td.sens.data_names[1]); tmps.push_str(" ");
+        tmps.push_str(td.sens.data_names[2]);
+        assert_eq!(td.bus.spy_data(), tmps.into_bytes());
     }
 
     #[test]
