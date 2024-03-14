@@ -49,7 +49,7 @@ pub enum ControllerCommand {
     NameRequest = 0,   //Indicates the sensor's name.
     StatusRequest,     //For getting sensor modules status
     ResetRequest,      //For asking the module to do a soft-reset.
-    FormatingRequest,  //Gives the format of sensor's readings.
+    FormattingRequest,  //Gives the format of sensor's readings.
     DnamesRequest,     //Gives the data's names, (volts/temp/humidity etc)
     DataRequest,       //For requests of the sensor's data for individual type.
 }
@@ -60,7 +60,7 @@ impl From<u8> for ControllerCommand {
             0 => ControllerCommand::NameRequest,
             1 => ControllerCommand::StatusRequest,
             2 => ControllerCommand::ResetRequest,
-            3 => ControllerCommand::FormatingRequest,
+            3 => ControllerCommand::FormattingRequest,
             4 => ControllerCommand::DnamesRequest,
             5 => ControllerCommand::DataRequest,
             _ => ControllerCommand::ResetRequest

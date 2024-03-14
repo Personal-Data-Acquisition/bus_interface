@@ -26,8 +26,8 @@ pub fn send_bus_command(
         ControllerCommand::ResetRequest => {
             data.push(ControllerCommand::ResetRequest as u8);
         }
-        ControllerCommand::FormatingRequest => {
-            data.push(ControllerCommand::FormatingRequest as u8);
+        ControllerCommand::FormattingRequest => {
+            data.push(ControllerCommand::FormattingRequest as u8);
         }
         ControllerCommand::DnamesRequest => {
             data.push(ControllerCommand::DnamesRequest as u8);
@@ -74,7 +74,7 @@ pub fn send_bus_command(
             ret.format.push(String::from("u8"));
             ret.raw_bytes.push(data[0]);
         }
-        ControllerCommand::FormatingRequest => {
+        ControllerCommand::FormattingRequest => {
             ret.raw_bytes = data;
             let res = ret.parse_raw_to_format();
             if ! res.is_ok() {
@@ -224,12 +224,12 @@ mod controller_tests {
 
         // Send the controller cmd
         let dname: String = String::new(); 
-        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::FormatingRequest, dname);
+        let cmd_result = send_bus_command(&mut td.bus, &ControllerCommand::FormattingRequest, dname);
         assert!(cmd_result.is_ok());
 
         // now check the send data.
         assert!(td.bus.spy_id() == 0);
-        assert!(td.bus.spy_data()[0] == ControllerCommand::FormatingRequest as u8);
+        assert!(td.bus.spy_data()[0] == ControllerCommand::FormattingRequest as u8);
 
         // check returned data.
         let cmd_data = cmd_result.ok().unwrap();

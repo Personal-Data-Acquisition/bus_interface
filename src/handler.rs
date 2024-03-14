@@ -46,7 +46,7 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
             bus.send_message(slv_id, &write_buf)?;
 
         }
-        ControllerCommand::FormatingRequest => {
+        ControllerCommand::FormattingRequest => {
             let formatting = sens.get_format().as_bytes(); 
             
             for i in 0..formatting.len() {
@@ -165,13 +165,13 @@ mod handler_tests {
     }
 
     #[test]
-    fn formating_handler() {
+    fn formatting_handler() {
         
         let mut td = setup();
         let slv_id: u32 = 0x01;
 
         // Preload the needed test data.
-        let data: Vec<u8> = vec![ControllerCommand::FormatingRequest as u8];
+        let data: Vec<u8> = vec![ControllerCommand::FormattingRequest as u8];
         assert!(td.bus.set_rmsg_data(&data).is_ok());
 
         // Call the code under test.
