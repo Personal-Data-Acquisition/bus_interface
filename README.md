@@ -1,21 +1,63 @@
 # Bus_interface
 
-A template for creating or implimenting sensor shim layers.
+The interface repo/crate for connecting sensor_modules to a bus controller.
 
-## Where is all the documentation?
+Abstracts away the physical hardware and bus being used to allow for platform
+agnostic communications.
+
+## Goals 
+
+* Be Bus independant.
+* Be hardware/sensor independent.
+* Allow Plug and play of new sensor_modules.
 
 
-## What is a sensor shim layer?
+## Running tests
 
-A sensor shim layer is a thin layer of code between the sensor driver the rest
-of your code.
+```sh
 
-It provides a unified interface for all sensors that can self identify the 
-sensor over a bus or network to a main controller.
+cd ./bus_interface
+cargo test
+```
 
-## How do I use it?
+## Using for sensor_module(embedded)
 
-##
+```toml
 
+[dependencies]
+
+
+```
+
+
+## Using for Bus Controller
+
+```toml
+
+[dependencies]
+
+
+```
+
+
+## Implimenting needed functions
+
+**Controller(CAN master)**
+
+- BUS:: The pub trait for the systems coms.
+
+The controller side of things is pretty much ready to roll. It's assuming
+it's run on a system that's powerful enough to make use of vectors and the
+standard library.
+
+
+**Handler(CAN slave)**
+
+- SensorInterface:: this is a public trait.
+- BUS:: another public trait.
+
+For example on a stm32 system you would write a wrapper around the
+bxCAN functionality that was compatible with the `pub trait Bus`, in order
+to use the repo.
 
 

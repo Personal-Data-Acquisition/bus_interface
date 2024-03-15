@@ -1,7 +1,6 @@
 // The data that gets returned from the command requests.
 #![allow(dead_code)]
 
-
 //considering the use of this C style union.
 //it requires use of 'unsafe' and may not be the best choice.
 #[repr(C)]
@@ -17,10 +16,10 @@ union UData {
 
 #[derive(Debug)]
 pub struct CmdReturn {
-    name: String,
-    format: Vec<String>,
-    data_names: Vec<String>,
-    raw_bytes: Vec<u8>,
+    pub name: String,
+    pub format: Vec<String>,
+    pub data_names: Vec<String>,
+    pub raw_bytes: Vec<u8>,
 }
 
 impl CmdReturn {
@@ -32,30 +31,54 @@ impl CmdReturn {
             raw_bytes: vec![],
         };
         ret
-    }  
-
-    pub fn parse_to_json(&self) -> String {
-        let mut json = String::new();
-        //1. add the name json.
-        json.push_str("{\"name\":\"");
-        json.push_str(&self.name);
-        json.push_str("\"");
-
-        let data_strings = self.bytes_to_strings();
-
-        //2. Add the data.
-        for i in 0..self.data_names.len() {
-            json.push_str(", \"");
-            json.push_str(&self.data_names[i]);
-            json.push_str("\":\"");
-            json.push_str(&data_strings[i]);
-            json.push_str("\"");
-        }
-        
-        json.push_str("}");
-
-        json
     }
+
+    pub fn parse_raw_to_dnames(&mut self) -> Result<(), &'static str> {
+        //steps
+        //1. convert raw bytes to string.
+        let res = String::from_utf8(self.raw_bytes.clone());
+
+        if res.is_err() {
+            return Err("Error: Issue converting rawbytes into string!");
+        }
+
+        let tmp_str = res.unwrap();
+
+        //2. iterate through "words" delimited by spaecs.
+        let dname_strs: Vec<_> = tmp_str.split(" ").collect(); 
+       
+        //3. push into the format variable.
+        for s in dname_strs.iter() {
+            self.data_names.push(s.to_string())
+        }
+
+        return Ok(());
+    }
+
+    pub fn parse_raw_to_format(&mut self) -> Result<(), &'static str>{
+        //steps
+        //1. convert raw bytes to string.
+        let res = String::from_utf8(self.raw_bytes.clone());
+        println!("res {:?}", res);
+
+        if res.is_err() {
+            return Err("Error: Issue converting rawbytes into string!");
+        }
+
+        let tmp_str = res.unwrap();
+
+        //2. iterate through "words" delimited by spaecs.
+        let fmt_strs: Vec<_> = tmp_str.split(" ").collect(); 
+        println!("fmt_strs {:?}", fmt_strs);
+
+        //3. push into the format variable.
+        for s in fmt_strs.iter() {
+            self.format.push(s.to_string())
+        }
+
+        return Ok(());
+    }
+
 
     fn bytes_to_strings(&self) -> Vec<String> {
         let mut data: Vec<String> = vec![]; 
@@ -139,8 +162,10 @@ mod test_cmdreturn {
     fn setup() -> CmdReturn {
         let mut new_response = CmdReturn::new();
         new_response.name = String::from("aht20");
+        new_response.format.push(String::from("u8"));
         new_response.format.push(String::from("u16"));
         new_response.format.push(String::from("u16"));
+        new_response.data_names.push(String::from("Status"));
         new_response.data_names.push(String::from("Temp"));
         new_response.data_names.push(String::from("Humid"));
         new_response.raw_bytes = vec!(0, 255, 0, 255);
@@ -161,17 +186,52 @@ mod test_cmdreturn {
         assert_eq!(new_response.name, String::from("fake_sensor"));
     }
 
+    #[test]
+    fn test_parse_raw_to_format() {
+        
+        //setup the conditions for the test
+        let mut ret = setup();
+        ret.format = vec![];
+        ret.raw_bytes = String::from("u8 u16 u16").into_bytes();
+       
+        //check that it's currently empty.
+        assert_eq!(ret.format.len(), 0);
+
+        //call the cut(code under test)
+        let res = ret.parse_raw_to_format();
+        assert!(res.is_ok());
+
+        //check that it parses correctly
+        assert_eq!(ret.format.len(), 3);
+        assert_eq!(ret.format[0], String::from("u8"));
+        assert_eq!(ret.format[1], String::from("u16"));
+        assert_eq!(ret.format[2], String::from("u16"));
+
+        //clean up 
+    }
+
 
     #[test]
-    fn test_parse_to_json() {
-        let ret = setup();
-        let correct_response = String::from("{\"name\":\"aht20\", \"Temp\":\"255\", \"Humid\":\"255\"}");
-        
-        //test list
-        //1. has parse function.
-        let json_str = ret.parse_to_json();
+    fn test_parse_raw_to_dnames() {
+        //setup the conditions for the test
+        let mut ret = setup();
+        ret.data_names= vec![];
+        ret.raw_bytes = String::from("Status Temp Humid").into_bytes();
+       
+        //check that it's currently empty.
+        assert_eq!(ret.data_names.len(), 0);
 
-        //2. outputs jason correctly.
-        assert_eq!(json_str, correct_response);
+        //call the cut(code under test)
+        let res = ret.parse_raw_to_dnames();
+        assert!(res.is_ok());
+        println!("ret {:?}", ret); 
+
+        //check that it parses correctly
+        assert_eq!(ret.data_names.len(), 3);
+        assert_eq!(ret.data_names[0], String::from("Status"));
+        assert_eq!(ret.data_names[1], String::from("Temp"));
+        assert_eq!(ret.data_names[2], String::from("Humid"));
+
+        //clean up 
     }
 }
