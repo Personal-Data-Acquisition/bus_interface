@@ -50,8 +50,19 @@ impl SensorInterface for ExampleSensor {
         return READING_NAMES;
     }
 
-    fn read_sensor(&mut self) -> &SensorData {
-        return &self.data; 
+    fn read_sensor(&mut self, idx: u8) -> &SensorData {
+        // Read the fake sensor. 
+        match self.data_types[idx as usize] {
+            "u8" => self.data.size = 1,
+            "i8" => self.data.size = 1,
+            "u16" => self.data.size = 2,
+            "i16" => self.data.size = 2,
+            "u32" => self.data.size = 4,
+            "i32" => self.data.size = 4,
+            "f32" => self.data.size = 4,
+            _ => self.data.size = 0,
+        }
+        return &self.data;
     }
 
 }
@@ -72,6 +83,7 @@ mod fake_sensor_test {
     fn setup() -> TestData {
         let sd = SensorData {
             data: [0x0F, 0xAA, 0x00, 0x55],
+            size: 4
         }; 
         
         let fake_sensor = ExampleSensor {
@@ -94,5 +106,19 @@ mod fake_sensor_test {
     #[test]
     fn check_self() {
         assert!(true);
+    }
+
+    #[test]
+    fn test_read_data() {
+        let mut td = setup();
+
+        td.sens.read_sensor(1);
+        assert!(td.sens.data.size == 2);
+
+        td.sens.read_sensor(0);
+        assert!(td.sens.data.size == 1);
+
+        td.sens.read_sensor(2);
+        assert!(td.sens.data.size == 2);
     }
 }
