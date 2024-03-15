@@ -38,3 +38,26 @@ cargo test
 
 
 ```
+
+
+## Implimenting needed functions
+
+**Controller(CAN master)**
+
+- BUS:: The pub trait for the systems coms.
+
+The controller side of things is pretty much ready to roll. It's assuming
+it's run on a system that's powerful enough to make use of vectors and the
+standard library.
+
+
+**Handler(CAN slave)**
+
+- SensorInterface:: this is a public trait.
+- BUS:: another public trait.
+
+For example on a stm32 system you would write a wrapper around the
+bxCAN functionality that was compatible with the `pub trait Bus`, in order
+to use the repo.
+
+
