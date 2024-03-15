@@ -5,7 +5,8 @@
  * Desc: File to be included for embedded devices. 
  */
 
-//include!("fake_sensor.rs");
+
+#![no_std]
 
 pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorInterface) -> Result<(), BusError>{
     
