@@ -25,15 +25,12 @@ cargo test
 ```toml
 
 [dependencies]
+# This is shown as muli-line for visual appeal only.
 bus_interface = {
     git = "https://github.com/Personal-Data-Acquisition/bus_interface.git",
-    branch = "main",
+    branch = "main", 
+    features = []
     }
-
-[dependencies.bus_interface]
-version = "0.2.0"
-default_features = false
-features = ["bus_master"]
 
 ```
 
@@ -42,16 +39,12 @@ features = ["bus_master"]
 
 ```toml
 [dependencies]
+# This is shown as muli-line for visual appeal only.
 bus_interface = {
     git = "https://github.com/Personal-Data-Acquisition/bus_interface.git",
-    branch = "main",
+    branch = "main", 
+    features = ["bus_master"]
     }
-
-[dependencies.bus_interface]
-version = "0.2.0"
-default_features = false
-features = []
-
 
 ```
 
