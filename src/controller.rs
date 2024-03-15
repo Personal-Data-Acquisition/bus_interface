@@ -97,11 +97,6 @@ pub fn send_bus_command(
     return Ok(ret);
 }
 
-#[allow(dead_code)]
-fn initiate_request(cmd: ControllerCommand) {
-    assert!(false);
-}
-
 
 #[cfg(test)]
 mod controller_tests {
@@ -118,6 +113,7 @@ mod controller_tests {
     fn setup() -> TestData {
         let sd = SensorData {
             data: [0x0F, 0xAA, 0x00, 0x55],
+            size: 4,
         }; 
         
         let fake_sensor = ExampleSensor {
