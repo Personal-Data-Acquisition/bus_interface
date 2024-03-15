@@ -13,13 +13,14 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
     let result = bus.receive_message()?;
 
     let id;
-    let mut _master_data: Vec<u8> = vec![]; 
-    (id, _master_data) = result;
-    let cmd: ControllerCommand = _master_data[0].into();
+    let master_data: Vec<u8>;
+    (id, master_data) = result;
+    let cmd: ControllerCommand = master_data[0].into();
     println!("id: {:?}\n", id);
+    println!("master_data: {:?}", master_data);
 
     let mut write_buf: Vec<u8> = vec![];
-
+    
     //match the command so we can call a handler.
     match cmd {
         ControllerCommand::NameRequest => {
@@ -68,7 +69,17 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
 
         }
         ControllerCommand::DataRequest => {
+            // The '1' index of the sent data indicates the sensor info 
+            // that is being requested.
+            let data_index = master_data[1];
 
+            // The sensor info returned is based off the index.
+            let sensor_info = sens.read_sensor(data_index);
+            for i in 0..sensor_info.size {
+                write_buf.push(sensor_info.data[i]);
+            }
+
+            bus.send_message(slv_id, &write_buf)?;
         }
     }
 
@@ -90,7 +101,8 @@ mod handler_tests {
     #[allow(dead_code)]
     fn setup() -> TestData {
         let sd = SensorData {
-            data: [0x0F, 0xAA, 0x00, 0x55],
+            data: [0xAA, 0x55, 0x00, 0x55],
+            size: 4,
         }; 
         
         let fake_sensor = ExampleSensor {
@@ -212,15 +224,18 @@ mod handler_tests {
         let slv_id: u32 = 0x01;
 
         // Preload the needed test data.
-        let mut data_name = String::from("Temp").into_bytes();
-        let mut data: Vec<u8> = vec![ControllerCommand::DnamesRequest as u8];
-        data.append(&mut data_name);
+        let data_index: u8 = 1; //Should equate to "temp" 
+        let mut data: Vec<u8> = vec![ControllerCommand::DataRequest as u8];
+        data.push(data_index);
         assert!(td.bus.set_rmsg_data(&data).is_ok());
 
         // Call the code under test.
         assert!(handle_bus_command(slv_id, &mut td.bus, &mut td.sens).is_ok());
         
         // Check that the response is correct.
+        println!("spy_data {:?}", td.bus.spy_data());
+        println!("sensor data size: {}", td.sens.data.size);
+        println!("sensor_data: {:?}", td.sens.data.data);
         assert_eq!(td.bus.spy_data()[0], td.sens.data.data[0]);
         assert_eq!(td.bus.spy_data()[1], td.sens.data.data[1]);
     }
