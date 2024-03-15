@@ -25,7 +25,15 @@ cargo test
 ```toml
 
 [dependencies]
+bus_interface = {
+    git = "https://github.com/Personal-Data-Acquisition/bus_interface.git",
+    branch = "main",
+    }
 
+[dependencies.bus_interface]
+version = "0.2.0"
+default_features = false
+features = ["bus_master"]
 
 ```
 
@@ -33,8 +41,16 @@ cargo test
 ## Using for Bus Controller
 
 ```toml
-
 [dependencies]
+bus_interface = {
+    git = "https://github.com/Personal-Data-Acquisition/bus_interface.git",
+    branch = "main",
+    }
+
+[dependencies.bus_interface]
+version = "0.2.0"
+default_features = false
+features = []
 
 
 ```
