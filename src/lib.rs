@@ -20,7 +20,7 @@ include!("controller.rs");
 
 const _MAX_NAME_BYTES_LEN: usize = 64;
 const _MAX_WAIT_MS: u32 = 500;
-const SEND_BUFFER_BYTES: usize = 8;
+const _SEND_BUFFER_BYTES: usize = 8;
 const _READ_BUFFER_BYTES: usize = 8;
 const CRONTROLLER_ID: u32 = 0;
 const _CONTROLLER_BUFFER: usize = 256;
@@ -97,7 +97,7 @@ pub trait SensorInterface {
 
     fn get_data_names(&self) -> &'static str;
 
-    fn read_sensor(&mut self) -> &SensorData;
+    fn read_sensor(&mut self, idx: u8) -> &SensorData;
 
 }
 
@@ -114,5 +114,6 @@ pub enum BusStatus {
 #[allow(dead_code)]
 pub struct SensorData {
     data: [u8; MAX_DATA],
+    size: usize,
 }
 
