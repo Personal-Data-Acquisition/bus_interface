@@ -6,16 +6,18 @@ use cmd_return::CmdReturn;
 
 /* Include all the files when we test them. */
 
+#[cfg(test)]
 include!("fake_sensor.rs");
 
-//#[cfg(test)]
+#[cfg(test)]
 include!("fake_bus.rs");
 
-//#[cfg(test)]
+#[cfg(any(test, feature = "bus_master"))]
+include!("controller.rs");
+
+#[cfg(any(test, not(feature = "bus_master")))]
 include!("handler.rs");
 
-//#[cfg(test)]
-include!("controller.rs");
 
 
 const _MAX_NAME_BYTES_LEN: usize = 64;
