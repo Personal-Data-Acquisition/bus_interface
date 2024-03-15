@@ -14,9 +14,7 @@ edition = "2021"
 
 
 [features]
-#default = ["can_mock"]
-#can_mock = ["can_mock"] 
-#default = ["socketcan"]
-#bxcan = ["bxcan_impl"]
-#socketcan = ["socketcan_impl"] 
+
+# Defines a feature named 'Bus Master'
+bus_master = []
 
