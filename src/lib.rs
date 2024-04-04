@@ -1,8 +1,8 @@
 //Support using without the standard library
-#![cfg_attr(not(feature = "std"), no_std)]
+//#![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(feature = "alloc")]
-extern crate alloc;
+//#[cfg(feature = "alloc")]
+//extern crate alloc;
 
 //#![cfg(feature = "sensor_module")]
 //extern crate alloc;
@@ -24,11 +24,17 @@ include!("handler.rs");
 
 
 
+//#[cfg(all(feature = "alloc", not(feature = "std")))]
+//pub use alloc::vec::Vec;
+//#[cfg(feature = "std")]
+//pub use std::vec::Vec;
+
+
+
 const _MAX_NAME_BYTES_LEN: usize = 64;
 const _MAX_WAIT_MS: u32 = 500;
 const _SEND_BUFFER_BYTES: usize = 8;
 const _READ_BUFFER_BYTES: usize = 8;
-const CRONTROLLER_ID: u32 = 0;
 const _CONTROLLER_BUFFER: usize = 256;
 const MAX_DATA: usize = 4;
 
