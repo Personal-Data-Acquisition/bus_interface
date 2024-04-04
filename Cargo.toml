@@ -17,4 +17,5 @@ edition = "2021"
 
 # Defines a feature named 'Bus Master'
 bus_master = []
+sensor_module = []
 
