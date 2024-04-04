@@ -35,6 +35,8 @@ const _MAX_NAME_BYTES_LEN: usize = 64;
 const _MAX_WAIT_MS: u32 = 500;
 const _SEND_BUFFER_BYTES: usize = 8;
 const _READ_BUFFER_BYTES: usize = 8;
+#[allow(dead_code)]
+const CRONTROLLER_ID: u32 = 0; /*Not actually dead code, called by controller*/
 const _CONTROLLER_BUFFER: usize = 256;
 const MAX_DATA: usize = 4;
 
