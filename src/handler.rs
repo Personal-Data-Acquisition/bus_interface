@@ -11,9 +11,9 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
     //get the cmd out of the message.
     let result = bus.receive_message()?;
 
-    let id;
+    let _id;
     let master_data: Vec<u8>;
-    (id, master_data) = result;
+    (_id, master_data) = result;
     let cmd: ControllerCommand = master_data[0].into();
 
     let mut write_buf: Vec<u8> = vec![];
