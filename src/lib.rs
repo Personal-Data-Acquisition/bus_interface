@@ -1,5 +1,5 @@
 //Support using without the standard library
-//#![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 
 //#[cfg(feature = "alloc")]
 //extern crate alloc;
@@ -18,7 +18,6 @@ include!("fake_bus.rs");
 #[cfg(any(test, feature = "bus_master"))]
 include!("controller.rs");
 
-//#[cfg(any(test, not(feature = "bus_master")))]
 #[cfg(any(test, feature = "sensor_module"))]
 include!("handler.rs");
 
