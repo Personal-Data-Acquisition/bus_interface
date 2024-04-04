@@ -1,5 +1,11 @@
-#![cfg_attr(not(test), no_std)]
+//Support using without the standard library
+#![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
+//#![cfg(feature = "sensor_module")]
+//extern crate alloc;
 
 /* Include all the files when we test them. */
 
