@@ -1,8 +1,5 @@
-//#![cfg_attr(test)]
-//#![no_std]
+#![cfg_attr(not(test), no_std)]
 
-mod cmd_return;
-use cmd_return::CmdReturn;
 
 /* Include all the files when we test them. */
 
@@ -15,7 +12,8 @@ include!("fake_bus.rs");
 #[cfg(any(test, feature = "bus_master"))]
 include!("controller.rs");
 
-#[cfg(any(test, not(feature = "bus_master")))]
+//#[cfg(any(test, not(feature = "bus_master")))]
+#[cfg(any(test, feature = "sensor_module"))]
 include!("handler.rs");
 
 
