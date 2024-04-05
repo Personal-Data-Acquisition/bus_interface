@@ -4,7 +4,16 @@
  * Filename: handler.rs
  * Desc: File to be included for embedded devices. 
  */
-//#[cfg_attr(not(test), no_std)]
+
+/* Use an allocator if we aren't in a std enviroment or testing.*/
+#[cfg(any(not(test), feature = "sensor_module"))]
+extern crate alloc;
+
+#[cfg(any(not(test), feature = "sensor_module"))]
+use alloc::vec::Vec;
+
+#[cfg(any(not(test), feature = "sensor_module"))]
+use alloc::vec;
 
 
 pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorInterface) -> Result<(), BusError>{
