@@ -1,33 +1,5 @@
 //Support using without the standard library
-#![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
-
-//#[cfg(feature = "alloc")]
-//extern crate alloc;
-
-//#![cfg(feature = "sensor_module")]
-//extern crate alloc;
-
-/* Include all the files when we test them. */
-
-#[cfg(test)]
-include!("fake_sensor.rs");
-
-#[cfg(test)]
-include!("fake_bus.rs");
-
-#[cfg(any(test, feature = "bus_master"))]
-include!("controller.rs");
-
-#[cfg(any(test, feature = "sensor_module"))]
-include!("handler.rs");
-
-
-
-//#[cfg(all(feature = "alloc", not(feature = "std")))]
-//pub use alloc::vec::Vec;
-//#[cfg(feature = "std")]
-//pub use std::vec::Vec;
-
+#![cfg_attr(all(not(feature = "bus_master"), not(test)), no_std)]
 
 
 const _MAX_NAME_BYTES_LEN: usize = 64;
@@ -129,4 +101,21 @@ pub struct SensorData {
     data: [u8; MAX_DATA],
     size: usize,
 }
+
+
+
+/* Include all the files when we test them. */
+
+#[cfg(test)]
+include!("fake_sensor.rs");
+
+#[cfg(test)]
+include!("fake_bus.rs");
+
+#[cfg(any(test, feature = "bus_master"))]
+include!("controller.rs");
+
+#[cfg(any(test, feature = "sensor_module"))]
+include!("handler.rs");
+
 
