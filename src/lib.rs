@@ -1,28 +1,42 @@
-//#![cfg_attr(test)]
-//#![no_std]
+//Support using without the standard library
+//#![cfg_attr(not(feature = "std"), no_std)]
 
-mod cmd_return;
-use cmd_return::CmdReturn;
+//#[cfg(feature = "alloc")]
+//extern crate alloc;
+
+//#![cfg(feature = "sensor_module")]
+//extern crate alloc;
 
 /* Include all the files when we test them. */
 
+#[cfg(test)]
 include!("fake_sensor.rs");
 
-//#[cfg(test)]
+#[cfg(test)]
 include!("fake_bus.rs");
 
-//#[cfg(test)]
+#[cfg(any(test, feature = "bus_master"))]
+include!("controller.rs");
+
+//#[cfg(any(test, not(feature = "bus_master")))]
+#[cfg(any(test, feature = "sensor_module"))]
 include!("handler.rs");
 
-//#[cfg(test)]
-include!("controller.rs");
+
+
+//#[cfg(all(feature = "alloc", not(feature = "std")))]
+//pub use alloc::vec::Vec;
+//#[cfg(feature = "std")]
+//pub use std::vec::Vec;
+
 
 
 const _MAX_NAME_BYTES_LEN: usize = 64;
 const _MAX_WAIT_MS: u32 = 500;
 const _SEND_BUFFER_BYTES: usize = 8;
 const _READ_BUFFER_BYTES: usize = 8;
-const CRONTROLLER_ID: u32 = 0;
+#[allow(dead_code)]
+const CRONTROLLER_ID: u32 = 0; /*Not actually dead code, called by controller*/
 const _CONTROLLER_BUFFER: usize = 256;
 const MAX_DATA: usize = 4;
 

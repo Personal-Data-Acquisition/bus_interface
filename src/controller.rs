@@ -5,6 +5,8 @@
  * Desc: File to be included for SBC(single board computer). 
  */
 
+mod cmd_return;
+use cmd_return::CmdReturn;
 
 // Used by the BUS Master/Controller
 pub fn send_bus_command(

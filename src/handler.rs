@@ -5,19 +5,16 @@
  * Desc: File to be included for embedded devices. 
  */
 
-//include!("fake_sensor.rs");
 
 pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorInterface) -> Result<(), BusError>{
     
     //get the cmd out of the message.
     let result = bus.receive_message()?;
 
-    let id;
+    let _id;
     let master_data: Vec<u8>;
-    (id, master_data) = result;
+    (_id, master_data) = result;
     let cmd: ControllerCommand = master_data[0].into();
-    println!("id: {:?}\n", id);
-    println!("master_data: {:?}", master_data);
 
     let mut write_buf: Vec<u8> = vec![];
     
@@ -194,7 +191,6 @@ mod handler_tests {
         tmps.push_str(td.sens.data_types[0]); tmps.push_str(" ");
         tmps.push_str(td.sens.data_types[1]); tmps.push_str(" ");
         tmps.push_str(td.sens.data_types[2]); 
-        println!("tmps: {}", tmps);
         assert_eq!(td.bus.spy_data(), tmps.into_bytes());
     }
 

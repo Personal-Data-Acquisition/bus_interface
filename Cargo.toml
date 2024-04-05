@@ -1,6 +1,6 @@
 [package]
 name = "bus_interface"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -8,15 +8,19 @@ edition = "2021"
 [dependencies]
 #bxcan = {version = "0.5", optional = true}
 #socketcan = {version = "0.3", optional = true}
+#alloc=
 
 [dev-dependencies]
 
 
 
 [features]
-#default = ["can_mock"]
-#can_mock = ["can_mock"] 
-#default = ["socketcan"]
-#bxcan = ["bxcan_impl"]
-#socketcan = ["socketcan_impl"] 
+
+# Defines a feature named 'Bus Master'
+default = ["std"]
+
+std = []
+alloc = []
+bus_master = []
+sensor_module = []
 
