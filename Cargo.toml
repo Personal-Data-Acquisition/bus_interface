@@ -17,9 +17,8 @@ edition = "2021"
 [features]
 
 # Defines a feature named 'Bus Master'
-default = ["std"]
+default = ["bus_master"]
 
-std = []
 alloc = []
 bus_master = []
 sensor_module = []
