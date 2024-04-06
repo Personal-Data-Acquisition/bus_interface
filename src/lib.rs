@@ -1,5 +1,6 @@
 //Support using without the standard library
-#![cfg_attr(all(not(feature = "bus_master"), not(test)), no_std)]
+//#![cfg_attr(all(not(feature = "bus_master"), not(test)), no_std)]
+#![no_std]
 
 /* Use an allocator if we aren't in a std enviroment or testing.*/
 #[cfg(all(not(test), feature = "sensor_module"))]
