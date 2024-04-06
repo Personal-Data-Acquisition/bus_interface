@@ -10,9 +10,10 @@ use crate::Bus;
 use crate::BusStatus;
 use crate::ControllerCommand;
 use crate::CRONTROLLER_ID;
-
+use crate::cmd_return::CmdReturn;
 
 // Used by the BUS Master/Controller
+#[allow(dead_code)]
 pub fn send_bus_command(
     bus: &mut dyn Bus,
     cmd: &ControllerCommand,
@@ -107,6 +108,11 @@ pub fn send_bus_command(
 #[cfg(test)]
 mod controller_tests {
     use super::*;
+    use crate::fake_sensor::ExampleSensor;
+    use crate::fake_bus::FakeBus;
+    use crate::SensorData;
+    use crate::fake_sensor::SENSOR_NAME;
+    use crate::SensorStatus;
 
 
     #[allow(dead_code)]
