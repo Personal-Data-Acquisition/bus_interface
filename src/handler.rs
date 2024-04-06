@@ -9,9 +9,11 @@
 #[cfg(any(not(test), feature = "sensor_module"))]
 extern crate alloc;
 
+/* Include the `Vec` type from alloc */
 #[cfg(any(not(test), feature = "sensor_module"))]
 use alloc::vec::Vec;
 
+/* Use the `vec` macro from alloc */
 #[cfg(any(not(test), feature = "sensor_module"))]
 use alloc::vec;
 
