@@ -45,6 +45,7 @@ pub trait Bus{
 
 
 //#[derive(Debug, PartialEq, Eq)]
+#[derive(PartialEq, Eq)]
 #[repr(u8)]
 pub enum ControllerCommand {
     NameRequest = 0,   //Indicates the sensor's name.
