@@ -5,6 +5,8 @@
  * Desc: File to be included for embedded devices. 
  */
 
+use super::*;
+
 pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorInterface) -> Result<(), BusError>{
     
     //get the cmd out of the message.
@@ -87,6 +89,8 @@ pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorI
 #[cfg(test)]
 mod handler_tests {
     use super::*;
+    use crate::fake_bus::FakeBus;
+    use crate::fake_sensor::*;
 
     #[allow(dead_code)]
     struct TestData{
