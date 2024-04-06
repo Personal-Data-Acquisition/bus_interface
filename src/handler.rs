@@ -5,19 +5,6 @@
  * Desc: File to be included for embedded devices. 
  */
 
-/* Use an allocator if we aren't in a std enviroment or testing.*/
-#[cfg(any(not(test), feature = "sensor_module"))]
-extern crate alloc;
-
-/* Include the `Vec` type from alloc */
-#[cfg(any(not(test), feature = "sensor_module"))]
-use alloc::vec::Vec;
-
-/* Use the `vec` macro from alloc */
-#[cfg(any(not(test), feature = "sensor_module"))]
-use alloc::vec;
-
-
 pub fn handle_bus_command(slv_id: u32, bus: &mut dyn Bus, sens: &mut dyn SensorInterface) -> Result<(), BusError>{
     
     //get the cmd out of the message.

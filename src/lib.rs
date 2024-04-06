@@ -1,6 +1,20 @@
 //Support using without the standard library
 #![cfg_attr(all(not(feature = "bus_master"), not(test)), no_std)]
 
+/* Use an allocator if we aren't in a std enviroment or testing.*/
+#[cfg(any(not(test), feature = "sensor_module"))]
+extern crate alloc;
+
+/* Include the `Vec` type from alloc */
+#[cfg(any(not(test), feature = "sensor_module"))]
+use alloc::vec::Vec;
+
+/* Use the `vec` macro from alloc */
+#[cfg(any(not(test), feature = "sensor_module"))]
+use alloc::vec;
+
+
+
 
 const _MAX_NAME_BYTES_LEN: usize = 64;
 const _MAX_WAIT_MS: u32 = 500;
