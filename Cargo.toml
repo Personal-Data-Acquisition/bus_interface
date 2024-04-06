@@ -17,7 +17,7 @@ edition = "2021"
 [features]
 
 # Defines a feature named 'Bus Master'
-default = ["bus_master"]
+default = []
 
 alloc = []
 bus_master = []
