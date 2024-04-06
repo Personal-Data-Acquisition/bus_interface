@@ -14,7 +14,7 @@ union UData {
     df32: f32,
 }
 
-#[derive(Debug)]
+//#[derive(Debug)]
 pub struct CmdReturn {
     pub name: String,
     pub format: Vec<String>,
@@ -59,7 +59,6 @@ impl CmdReturn {
         //steps
         //1. convert raw bytes to string.
         let res = String::from_utf8(self.raw_bytes.clone());
-        println!("res {:?}", res);
 
         if res.is_err() {
             return Err("Error: Issue converting rawbytes into string!");
@@ -69,7 +68,6 @@ impl CmdReturn {
 
         //2. iterate through "words" delimited by spaecs.
         let fmt_strs: Vec<_> = tmp_str.split(" ").collect(); 
-        println!("fmt_strs {:?}", fmt_strs);
 
         //3. push into the format variable.
         for s in fmt_strs.iter() {
