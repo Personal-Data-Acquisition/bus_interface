@@ -1,8 +1,8 @@
 // The data that gets returned from the command requests.
-#![allow(dead_code)]
 
 //considering the use of this C style union.
 //it requires use of 'unsafe' and may not be the best choice.
+#![allow(dead_code)]
 #[repr(C)]
 union UData {
     du8: u8,
