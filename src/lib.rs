@@ -1,6 +1,5 @@
 //Support using without the standard library
-//#![cfg_attr(all(not(feature = "bus_master"), not(test)), no_std)]
-#![no_std]
+#![cfg_attr(all(not(feature = "bus_master"), not(test)), no_std)]
 
 /* Use an allocator if we aren't in a std enviroment or testing.*/
 #[cfg(all(not(test), feature = "sensor_module"))]
@@ -124,15 +123,13 @@ pub struct SensorData {
 /* Include all the files when we test them. */
 
 #[cfg(test)]
-include!("fake_sensor.rs");
+mod fake_sensor;
 
 #[cfg(test)]
-include!("fake_bus.rs");
+mod fake_bus;
 
 #[cfg(any(test, feature = "bus_master"))]
-include!("controller.rs");
+mod controller;
 
 #[cfg(any(test, feature = "sensor_module"))]
-include!("handler.rs");
-
-
+mod handler;
