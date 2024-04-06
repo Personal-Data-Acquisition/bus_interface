@@ -14,6 +14,8 @@ use alloc::vec::Vec;
 use alloc::vec;
 
 
+#[cfg(any(not(test), feature = "sensor_module"))]
+use core::include;
 
 
 const _MAX_NAME_BYTES_LEN: usize = 64;
