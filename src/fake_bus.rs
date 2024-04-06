@@ -19,7 +19,7 @@ pub struct FakeBus {
     rmsg_buffer: [u8; BUFFER_SIZE],
     msg_size: usize,
     rmsg_size: usize,
-    auto_response: bool
+    pub auto_response: bool
 }
 
 impl FakeBus {
