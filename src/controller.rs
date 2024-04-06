@@ -100,7 +100,7 @@ pub fn send_bus_command(
             ret.raw_bytes = data;
         }
     }
-    println!("ret: {:?}", ret);
+    //println!("ret: {:?}", ret);
     return Ok(ret);
 }
 
