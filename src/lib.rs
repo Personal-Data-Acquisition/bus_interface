@@ -29,7 +29,7 @@ const MAX_DATA: usize = 4;
 
 
 // The Errors that we allow as result's
-#[derive(Debug)]
+//#[derive(Debug)]
 pub enum BusError {
     Unknown,
     BadParameter,
@@ -71,7 +71,7 @@ impl From<u8> for ControllerCommand {
 
 
 // Used to indicate the various kinds of sensor module statuses/states.
-#[derive(Debug, PartialEq, Eq)]
+//#[derive(Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum SensorStatus {
     Ready = 0,
@@ -103,7 +103,7 @@ pub trait SensorInterface {
 }
 
 
-#[derive(Debug, PartialEq, Eq)]
+//#[derive(Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum BusStatus {
     Good = 0,
