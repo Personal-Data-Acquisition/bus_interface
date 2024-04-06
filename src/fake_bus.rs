@@ -4,6 +4,8 @@
  * Filename: fake_bus.rs
  * Description: A fake implimentation of a bus for testing.
  */
+use crate::Bus;
+use crate::BusError;
 
 const BUFFER_SIZE: usize = 32;
 const MIN_ID: u32 =  0;
