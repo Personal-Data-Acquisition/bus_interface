@@ -270,8 +270,6 @@ mod fake_bus_tests {
        
         //check that we can spy on the sent data.
         let spy_data = fb.spy_data();
-        //println!("Spy_data: {:?}", spy_data);
-        //println!("orig data: {:?}", msg_data);
         
         assert!(spy_data == msg_data);
 
