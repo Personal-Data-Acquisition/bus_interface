@@ -5,6 +5,9 @@
  * Desc: Impliments the fake sensor for testing. 
  */
 
+use crate::SensorData;
+use crate::SensorInterface;
+use crate::SensorStatus;
 
 pub const NUM_TYPES: usize = 3;
 
@@ -21,11 +24,11 @@ pub const READING_TYPES: &str = "u8 u16 u16";
 //you can think of this as a fake sensor; or an example of what you
 //will need to create for the sensor interface.
 #[allow(dead_code)]
-struct ExampleSensor{
-    sensor_name: &'static str,
-    data_types: [&'static str; NUM_TYPES],
-    data_names: [&'static str; NUM_TYPES],
-    data: SensorData,
+pub struct ExampleSensor{
+    pub sensor_name: &'static str,
+    pub data_types: [&'static str; NUM_TYPES],
+    pub data_names: [&'static str; NUM_TYPES],
+    pub data: SensorData,
 }
 
 impl SensorInterface for ExampleSensor {
@@ -72,6 +75,7 @@ impl SensorInterface for ExampleSensor {
 #[cfg(test)]
 mod fake_sensor_test {
     use super::*;
+    use crate::fake_bus::FakeBus;
 
     #[allow(dead_code)]
     struct TestData{
