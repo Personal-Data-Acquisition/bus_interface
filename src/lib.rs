@@ -120,7 +120,8 @@ pub struct SensorData {
 
 
 
-/* Include all the files when we test them. */
+/* All the modules we need*/
+mod cmd_return;
 
 #[cfg(test)]
 mod fake_sensor;
