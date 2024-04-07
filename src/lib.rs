@@ -24,7 +24,7 @@ const MAX_DATA: usize = 4;
 
 
 // The Errors that we allow as result's
-//#[derive(Debug)]
+#[derive(Debug)]
 pub enum BusError {
     Unknown,
     BadParameter,
