@@ -13,10 +13,6 @@ extern crate alloc;
 #[cfg(all(not(test), feature = "sensor_module"))]
 use alloc::{vec::Vec, vec, string};
 
-/* Use the `vec` macro from alloc */
-#[cfg(all(not(test), feature = "sensor_module"))]
-use alloc::vec;
-
 /* Need to have the debug for embedded systems */
 #[cfg(all(not(test), feature = "sensor_module"))]
 use defmt::debug;
