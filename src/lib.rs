@@ -1,6 +1,8 @@
 //Support using without the standard library
 #![cfg_attr(all(not(feature = "bus_master"), not(test)), no_std)]
 
+#[cfg(all(not(test), feature = "sensor_module"))]
+use core::prelude::rust_2021::derive;
 
 #[cfg(all(not(test), feature = "sensor_module"))]
 use core::fmt;
@@ -16,6 +18,8 @@ use alloc::{vec::Vec, vec, string};
 /* Need to have the debug for embedded systems */
 #[cfg(all(not(test), feature = "sensor_module"))]
 use defmt::debug;
+
+
 
 
 const _MAX_NAME_BYTES_LEN: usize = 64;
