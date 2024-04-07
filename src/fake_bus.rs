@@ -1,5 +1,4 @@
-/*
- * Author: Jake G
+/* Author: Jake G
  * Date: 2024
  * Filename: fake_bus.rs
  * Description: A fake implimentation of a bus for testing.
