@@ -13,6 +13,10 @@ use alloc::vec::Vec;
 #[cfg(all(not(test), feature = "sensor_module"))]
 use alloc::vec;
 
+
+#[cfg(all(not(test), feature = "sensor_module"))]
+use defmt::debug;
+
 const _MAX_NAME_BYTES_LEN: usize = 64;
 const _MAX_WAIT_MS: u32 = 500;
 const _SEND_BUFFER_BYTES: usize = 8;
