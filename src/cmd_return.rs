@@ -1,8 +1,16 @@
+#[cfg(all(not(test), feature = "sensor_module"))]
+use alloc::vec::Vec;
+
+#[cfg(all(not(test), feature = "sensor_module"))]
+use alloc::vec;
+
+
+
 // The data that gets returned from the command requests.
-#![allow(dead_code)]
 
 //considering the use of this C style union.
 //it requires use of 'unsafe' and may not be the best choice.
+#[allow(dead_code)]
 #[repr(C)]
 union UData {
     du8: u8,
@@ -14,7 +22,7 @@ union UData {
     df32: f32,
 }
 
-#[derive(Debug)]
+//#[derive(Debug)]
 pub struct CmdReturn {
     pub name: String,
     pub format: Vec<String>,
@@ -59,7 +67,6 @@ impl CmdReturn {
         //steps
         //1. convert raw bytes to string.
         let res = String::from_utf8(self.raw_bytes.clone());
-        println!("res {:?}", res);
 
         if res.is_err() {
             return Err("Error: Issue converting rawbytes into string!");
@@ -69,7 +76,6 @@ impl CmdReturn {
 
         //2. iterate through "words" delimited by spaecs.
         let fmt_strs: Vec<_> = tmp_str.split(" ").collect(); 
-        println!("fmt_strs {:?}", fmt_strs);
 
         //3. push into the format variable.
         for s in fmt_strs.iter() {
@@ -79,7 +85,7 @@ impl CmdReturn {
         return Ok(());
     }
 
-
+    #[allow(dead_code)]
     fn bytes_to_strings(&self) -> Vec<String> {
         let mut data: Vec<String> = vec![]; 
         let mut byte_index: usize = 0;
@@ -158,7 +164,8 @@ fn bytes_to_i32(b: &Vec<u8>, start: usize) -> i32 {
 mod test_cmdreturn {
     #![allow(unused_imports)]
     use super::*;
-    
+   
+    #[allow(dead_code)]
     fn setup() -> CmdReturn {
         let mut new_response = CmdReturn::new();
         new_response.name = String::from("aht20");
@@ -224,7 +231,7 @@ mod test_cmdreturn {
         //call the cut(code under test)
         let res = ret.parse_raw_to_dnames();
         assert!(res.is_ok());
-        println!("ret {:?}", ret); 
+        //println!("ret {:?}", ret); 
 
         //check that it parses correctly
         assert_eq!(ret.data_names.len(), 3);

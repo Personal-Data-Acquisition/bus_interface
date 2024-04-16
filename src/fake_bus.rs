@@ -1,9 +1,10 @@
-/*
- * Author: Jake G
+/* Author: Jake G
  * Date: 2024
  * Filename: fake_bus.rs
  * Description: A fake implimentation of a bus for testing.
  */
+use crate::Bus;
+use crate::BusError;
 
 const BUFFER_SIZE: usize = 32;
 const MIN_ID: u32 =  0;
@@ -19,7 +20,7 @@ pub struct FakeBus {
     rmsg_buffer: [u8; BUFFER_SIZE],
     msg_size: usize,
     rmsg_size: usize,
-    auto_response: bool
+    pub auto_response: bool
 }
 
 impl FakeBus {
@@ -268,8 +269,6 @@ mod fake_bus_tests {
        
         //check that we can spy on the sent data.
         let spy_data = fb.spy_data();
-        println!("Spy_data: {:?}", spy_data);
-        println!("orig data: {:?}", msg_data);
         
         assert!(spy_data == msg_data);
 
